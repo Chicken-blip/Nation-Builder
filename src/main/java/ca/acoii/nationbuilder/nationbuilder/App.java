@@ -12,14 +12,18 @@ import java.io.IOException;
 
 public class App extends Application implements NationListener, GameEngineListener {
     private Label goldLabel, stabLabel, turnLabel;
+    private StackPane rootStack;
     private Nation yourNation = new Nation();
     private GameEngine engine = new GameEngine(yourNation);
 
     @Override
     public void start(Stage stage) throws IOException {
+        //Main Screen
         BorderPane root = new BorderPane();
+
         yourNation.addListener(this);
         engine.addListener(this);
+        engine.loadEvents();
 
         //Resource items
         goldLabel = new Label();
@@ -42,7 +46,13 @@ public class App extends Application implements NationListener, GameEngineListen
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
         Button turnBtn = new Button("NEXT TURN");
-        turnBtn.setOnAction(e -> engine.nextTurn());
+        turnBtn.setOnAction(e -> {
+            engine.nextTurn();
+            FiredEvent evt = engine.fireEvent();
+            if (evt != null) { showEventPopup(evt); }
+        });
+
+        //Formatting Boxes
         HBox bottomPane = new HBox(10, turnBtn);
         bottomPane.setAlignment(Pos.CENTER);
         bottomPane.setPadding(new Insets(10,20,10,20));
@@ -52,23 +62,48 @@ public class App extends Application implements NationListener, GameEngineListen
         root.setCenter(menuPane);
         root.setBottom(bottomPane);
 
-        stage.setScene(new Scene(root, 500, 359));
+        rootStack = new StackPane(root);
+        stage.setScene(new Scene(rootStack, 500, 359));
         onNationChanged(yourNation);
         onTurnAdvanced(engine);
         stage.show();
 
         //Testing Area
-        for (int i = 0; i < 20; i++) {
-            engine.loadEvents();
-            FiredEvent evt = engine.fireEvent();
-            if (evt != null) {
-                System.out.println("Fired Event: " + evt.getEvt().getText());
-                System.out.println("Source: " + evt.getNation().getName());
-            } else {
-                System.out.println("Event failed to fire.");
-            }
+
+
+    }
+
+    private void showEventPopup(FiredEvent evt) {
+        StackPane overlay = new StackPane();
+        //Popup overlay - to prevent other interactions
+        Region dim = new Region();
+        dim.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+
+        //Popup elements
+        Label title = new Label("EVENT");
+        Label txt = new Label(evt.getEvt().getText());
+        HBox btnPanel = new HBox(10);
+        btnPanel.setAlignment(Pos.CENTER);
+
+        //Full Popup - Overlay
+        VBox popup = new VBox(20, title, txt, btnPanel);
+        popup.setStyle("-fx-background-color: white; -fx-padding: 20; -fx-border-color: black;");
+        popup.setMaxHeight(500);
+        popup.setMaxWidth(400);
+
+        //Adding buttons
+        for (EventOption evtOpt : evt.getEvt().getOptions()) {
+            Button b = new Button(evtOpt.getOption());
+            b.setOnAction(e -> {
+                applyEffects(evtOpt.getResult());
+                rootStack.getChildren().remove(overlay);
+            });
+            btnPanel.getChildren().add(b);
         }
 
+        //Full overlayed popup
+        overlay.getChildren().addAll(dim, popup);
+        rootStack.getChildren().add(overlay);
     }
 
     @Override
@@ -80,5 +115,26 @@ public class App extends Application implements NationListener, GameEngineListen
     @Override
     public void onTurnAdvanced(GameEngine game) {
         turnLabel.setText("Turn: " + game.getTurn());
+    }
+
+    private void applyEffects(EventResult evtResult) {
+        for (EventEffect e : evtResult.getEffects()) {
+            int current = 0;
+            int change = e.getDelta();
+            switch (e.getStat()) {
+                case GOLD -> {
+                    current = yourNation.getGold();
+                    yourNation.setGold(current + change);
+                }
+                case STABILITY -> {
+                    current = yourNation.getStability();
+                    yourNation.setStability(current + change);
+                }
+                case RELATIONS -> {
+                    current = yourNation.getRelation();
+                    yourNation.setRelation(current + change);
+                }
+            }
+        }
     }
 }
