@@ -8,7 +8,7 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 
 # Roadmap
 - JSON-driven Event System
-- Multiple Nations + relations
+- Multiple Nations + relation
 - Political narrative
 - And more...
 

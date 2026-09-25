@@ -58,8 +58,16 @@ public class App extends Application implements NationListener, GameEngineListen
         stage.show();
 
         //Testing Area
-        engine.loadEvents();
-        System.out.println("No. of events: " + engine.getEventListSize());
+        for (int i = 0; i < 20; i++) {
+            engine.loadEvents();
+            FiredEvent evt = engine.fireEvent();
+            if (evt != null) {
+                System.out.println("Fired Event: " + evt.getEvt().getText());
+                System.out.println("Source: " + evt.getNation().getName());
+            } else {
+                System.out.println("Event failed to fire.");
+            }
+        }
 
     }
 

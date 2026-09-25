@@ -2,21 +2,24 @@ package ca.acoii.nationbuilder.nationbuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Nation {
-    private int gold,  stability, relations;
+    private int gold,  stability, relation;
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
 
     //Constructors
     public Nation() {
-        this("Fantasia", 100, 50);
+        this("Fantasia", 100, 50, 0);
     }
     public Nation(String name, int gold, int stability) {
+        this(name, gold, stability, 0);
+    }
+    public Nation(String name, int gold, int stability, int relation) {
         this.name = name;
         this.gold = gold;
         this.stability = stability;
+        this.relation = relation;
     }
 
     //Getters
@@ -29,8 +32,8 @@ public class Nation {
     public String getName() {
         return name;
     }
-    public int getRelations() {
-        return relations;
+    public int getRelation() {
+        return relation;
     }
 
 
@@ -48,9 +51,9 @@ public class Nation {
             notifyListeners();
         }
     }
-    public void setRelations(int relations) {
-        if (this.relations != relations) {
-            this.relations = relations;
+    public void setRelation(int relation) {
+        if (this.relation != relation) {
+            this.relation = relation;
             notifyListeners();
         }
     }
