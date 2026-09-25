@@ -1,0 +1,26 @@
+{
+  "id": 1,
+  "text": "{source} wants to trade with your nation",
+  "priority": "LOW",
+  "chance": 0.05,
+  "conditions": [
+    {"target": "SOURCE","stat": "RELATIONS","op": "GREATER_OR_EQUAL","value" : 0}
+  ],
+  "options": [
+    {
+      "option": "Accept Trade",
+      "result": {
+        "narrative": "You accepted the trade.",
+        "effects": [
+          {"stat": "GOLD", "delta": -200}
+        ]
+      }
+    },
+    {
+      "option": "Refuse Trade",
+      "result": {
+        "effects": []
+      }
+    }
+  ]
+}

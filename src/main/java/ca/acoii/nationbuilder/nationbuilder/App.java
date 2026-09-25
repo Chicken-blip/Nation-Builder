@@ -8,13 +8,15 @@ import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.scene.control.*;
 
+import java.io.IOException;
+
 public class App extends Application implements NationListener, GameEngineListener {
     private Label goldLabel, stabLabel, turnLabel;
     private Nation yourNation = new Nation();
     private GameEngine engine = new GameEngine(yourNation);
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         BorderPane root = new BorderPane();
         yourNation.addListener(this);
         engine.addListener(this);
@@ -54,6 +56,10 @@ public class App extends Application implements NationListener, GameEngineListen
         onNationChanged(yourNation);
         onTurnAdvanced(engine);
         stage.show();
+
+        //Testing Area
+        engine.loadEvents();
+        System.out.println("No. of events: " + engine.getEventListSize());
 
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Nation {
-    private int gold,  stability;
+    private int gold,  stability, relations;
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
 
@@ -23,14 +23,16 @@ public class Nation {
     public int getGold() {
         return gold;
     }
-
     public int getStability() {
         return stability;
     }
-
     public String getName() {
         return name;
     }
+    public int getRelations() {
+        return relations;
+    }
+
 
     //Setters
     public void setGold(int gold) {
@@ -43,6 +45,12 @@ public class Nation {
     public void setStability(int stability) {
         if (this.stability != stability) {
             this.stability = stability;
+            notifyListeners();
+        }
+    }
+    public void setRelations(int relations) {
+        if (this.relations != relations) {
+            this.relations = relations;
             notifyListeners();
         }
     }

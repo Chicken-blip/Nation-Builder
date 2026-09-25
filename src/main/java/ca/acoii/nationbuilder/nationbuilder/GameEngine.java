@@ -1,5 +1,6 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ public class GameEngine {
     private final Nation playerNation;
     private int turn;
     private final List<GameEngineListener> listeners = new ArrayList<>();
+    private List<GameEvent> events;
     public GameEngine(Nation nation) {
         playerNation = nation;
         turn = 1;
@@ -44,4 +46,14 @@ public class GameEngine {
             x.onTurnAdvanced(this);
         }
     }
+
+    public void loadEvents() {
+        events = new EventLoader().loadAll();
+    }
+
+    public int getEventListSize() {
+        return this.events.size();
+    }
+
+
 }
