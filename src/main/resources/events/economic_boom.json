@@ -1,0 +1,19 @@
+{
+  "id": 1,
+  "text": "Thanks to the stability of your nation, your economy is thriving!",
+  "priority": "LOW",
+  "chance": 0.05,
+  "conditions": [
+    {"target": "PLAYER","stat": "STABILITY","op": "GREATER_OR_EQUAL","value" : 70}
+  ],
+  "options": [
+    {
+      "option": "Wonderful!",
+      "result": {
+        "effects": [
+          {"stat": "GOLD", "delta": 100}
+        ]
+      }
+    }
+  ]
+}

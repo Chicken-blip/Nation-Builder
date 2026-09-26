@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
 
@@ -69,8 +70,9 @@ public class App extends Application implements NationListener, GameEngineListen
         stage.show();
 
         //Testing Area
-
-
+        for (GameEvent evt : engine.getEventList()) {
+            System.out.println("Event: " + evt.getText());
+        }
     }
 
     private void showEventPopup(FiredEvent evt) {
@@ -81,7 +83,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Popup elements
         Label title = new Label("EVENT");
-        Label txt = new Label(evt.getEvt().getText());
+        Text txt = new Text(evt.getEvt().getText());
         HBox btnPanel = new HBox(10);
         btnPanel.setAlignment(Pos.CENTER);
 
@@ -108,8 +110,8 @@ public class App extends Application implements NationListener, GameEngineListen
 
     @Override
     public void onNationChanged(Nation nation) {
-        goldLabel.setText("Gold: " + nation.getGold());
-        stabLabel.setText("Stability: " + nation.getStability());
+        goldLabel.setText("Gold: " + nation.getValue(Stat.GOLD));
+        stabLabel.setText("Stability: " + nation.getValue(Stat.STABILITY));
     }
 
     @Override
@@ -121,20 +123,9 @@ public class App extends Application implements NationListener, GameEngineListen
         for (EventEffect e : evtResult.getEffects()) {
             int current = 0;
             int change = e.getDelta();
-            switch (e.getStat()) {
-                case GOLD -> {
-                    current = yourNation.getGold();
-                    yourNation.setGold(current + change);
-                }
-                case STABILITY -> {
-                    current = yourNation.getStability();
-                    yourNation.setStability(current + change);
-                }
-                case RELATIONS -> {
-                    current = yourNation.getRelation();
-                    yourNation.setRelation(current + change);
-                }
-            }
+            current = yourNation.getValue(e.getStat());
+            yourNation.setValue(e.getStat(), current + change);
+
         }
     }
 }

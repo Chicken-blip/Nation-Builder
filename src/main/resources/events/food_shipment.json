@@ -1,0 +1,19 @@
+{
+  "id": 2,
+  "text": "{source} is sending food to your nation. How considerate!",
+  "priority": "LOW",
+  "chance": 0.1,
+  "conditions": [
+    {"target": "SOURCE", "stat": "RELATIONS", "op": "GREATER_OR_EQUAL", "value": 50}
+  ],
+  "options": [
+    {
+      "option": "Wonderful!",
+      "result": {
+        "effects": [
+          {"stat": "FOOD", "delta": 50}
+        ]
+      }
+    }
+  ]
+}

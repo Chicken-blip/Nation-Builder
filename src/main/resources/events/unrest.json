@@ -1,0 +1,30 @@
+{
+  "id": 4,
+  "text": "Your nation is growing unstable, and riots are growing in the region.",
+  "priority": "LOW",
+  "chance": 0.05,
+  "conditions": [
+    {"target": "PLAYER","stat": "STABILITY","op": "LESS_OR_EQUAL","value" : 35}
+  ],
+  "options": [
+    {
+      "option": "Crack Down",
+      "result": {
+        "narrative": "You quelled the riots in the region.",
+        "effects": [
+          {"stat": "GOLD", "delta": -50},
+          {"stat":  "STABILITY", "delta": 15}
+        ]
+      }
+    },
+    {
+      "option": "Let them be",
+      "result": {
+        "narrative": "You decided not to retaliate against the riots.",
+        "effects": [
+          {"stat": "STABILITY", "delta": -25}
+        ]
+      }
+    }
+  ]
+}

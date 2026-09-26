@@ -19,22 +19,13 @@ public class GameEngine {
         otherNations.add(new Nation("Xenos", 300, 50, 0));
     }
     public void nextTurn() {
-        adjustGold();
-        adjustStability();
+        adjustStat(Stat.GOLD, -10);
         turn++;
         notifyListeners();
     }
 
-    private void adjustStability() {
-        int stabIncrement = 0;
-        if (playerNation.getStability() <= 35) {
-            stabIncrement = (int) (Math.random() * 6) - 5;
-        }
-        playerNation.setStability(playerNation.getStability() + stabIncrement);
-    }
-
-    private void adjustGold() {
-        playerNation.setGold(playerNation.getGold() - 50);
+    private void adjustStat(Stat stat, int change) {
+        playerNation.setValue(stat,playerNation.getValue(Stat.GOLD) + change);
     }
 
     public int getTurn() {
@@ -56,8 +47,8 @@ public class GameEngine {
         events = new EventLoader().loadAll();
     }
 
-    public int getEventListSize() {
-        return this.events.size();
+    public List<GameEvent> getEventList() {
+        return this.events;
     }
 
     private boolean evaluateCondition(Condition c, Nation n) {
@@ -66,12 +57,7 @@ public class GameEngine {
             case SOURCE -> nation = n;
             case PLAYER ->  nation = playerNation;
         }
-        int stat = 0;
-        switch (c.getStat()) {
-            case GOLD -> stat = nation.getGold();
-            case STABILITY -> stat = nation.getStability();
-            case RELATIONS -> stat = nation.getRelation();
-        }
+        int stat = playerNation.getValue(c.getStat());
         switch (c.getOp()) {
             case EQUAL -> {
                 return stat == c.getValue();

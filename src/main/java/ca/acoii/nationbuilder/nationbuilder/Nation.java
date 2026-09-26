@@ -1,59 +1,45 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Nation {
-    private int gold,  stability, relation;
+    private Map<Stat, Integer> stats = new HashMap<>();
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
 
     //Constructors
     public Nation() {
-        this("Fantasia", 100, 50, 0);
+        this("Fantasia", 100, 20, 0);
     }
     public Nation(String name, int gold, int stability) {
         this(name, gold, stability, 0);
     }
     public Nation(String name, int gold, int stability, int relation) {
         this.name = name;
-        this.gold = gold;
-        this.stability = stability;
-        this.relation = relation;
+        stats.put(Stat.GOLD, gold);
+        stats.put(Stat.STABILITY, stability);
+        stats.put(Stat.RELATIONS, relation);
+        stats.put(Stat.FOOD, 0);
+        stats.put(Stat.METAL, 0);
+        stats.put(Stat.WOOD, 0);
     }
 
-    //Getters
-    public int getGold() {
-        return gold;
+    //General Getter - use for all getting (except for name)
+    public int getValue(Stat stat) {
+        return stats.get(stat);
     }
-    public int getStability() {
-        return stability;
-    }
+    //Exception - Name getter
     public String getName() {
         return name;
     }
-    public int getRelation() {
-        return relation;
-    }
 
-
-    //Setters
-    public void setGold(int gold) {
-        if (this.gold != gold) {
-            this.gold = gold;
-            notifyListeners();
-        }
-    }
-
-    public void setStability(int stability) {
-        if (this.stability != stability) {
-            this.stability = stability;
-            notifyListeners();
-        }
-    }
-    public void setRelation(int relation) {
-        if (this.relation != relation) {
-            this.relation = relation;
+    //General Setter - use for all setting
+    public void setValue(Stat stat, int newValue) {
+        if (stats.get(stat) != newValue) {
+            stats.replace(stat, newValue);
             notifyListeners();
         }
     }

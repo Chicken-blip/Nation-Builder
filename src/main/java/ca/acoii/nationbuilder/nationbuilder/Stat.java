@@ -1,5 +1,5 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
 public enum Stat {
-    GOLD, STABILITY, RELATIONS
+    GOLD, STABILITY, RELATIONS, FOOD, WOOD, METAL
 }
