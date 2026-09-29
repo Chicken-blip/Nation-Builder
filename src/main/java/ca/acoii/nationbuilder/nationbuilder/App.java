@@ -10,17 +10,25 @@ import javafx.stage.*;
 import javafx.scene.control.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App extends Application implements NationListener, GameEngineListener {
     private Label goldLabel, stabLabel, turnLabel;
     private StackPane rootStack;
+    BorderPane root;
+    TilePane menuPane;
+    Button turnBtn;
     private Nation yourNation = new Nation();
     private GameEngine engine = new GameEngine(yourNation);
+    //Diplomacy Info
+    private Label diplomacyHeader, diplomacyDetail;
+    private Nation selectedNation;
 
     @Override
     public void start(Stage stage) throws IOException {
         //Main Screen
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
 
         yourNation.addListener(this);
         engine.addListener(this);
@@ -36,17 +44,23 @@ public class App extends Application implements NationListener, GameEngineListen
         //Menu Items
         Button btn1 = new Button("Construction");
         btn1.setPrefWidth(100);
+        btn1.setOnAction(e -> {
+            showSubMenu("Construction", new Label("Coming soon..."));
+        });
         Button btn2 = new Button("Trade");
         btn2.setPrefWidth(100);
         Button btn3 = new Button("Diplomacy");
+        btn3.setOnAction(e -> {
+            showSubMenu("Diplomacy", diplomacyMenu());
+        });
         btn3.setPrefWidth(100);
         Button btn4 = new Button("War");
         btn4.setPrefWidth(100);
-        TilePane menuPane = new TilePane(10, 10, btn1, btn2, btn3, btn4);
+        menuPane = new TilePane(10, 10, btn1, btn2, btn3, btn4);
         menuPane.setPrefColumns(3);
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
-        Button turnBtn = new Button("NEXT TURN");
+        turnBtn = new Button("NEXT TURN");
         turnBtn.setOnAction(e -> {
             engine.nextTurn();
             FiredEvent evt = engine.fireEvent();
@@ -108,6 +122,71 @@ public class App extends Application implements NationListener, GameEngineListen
         rootStack.getChildren().add(overlay);
     }
 
+    private void showSubMenu(String title, Node content) {
+        Label t = new Label(title);
+        t.setMaxWidth(Double.MAX_VALUE);
+        t.setAlignment(Pos.CENTER);
+        VBox subMenu = new VBox(10, t, content);
+        Button btn = new Button("Back");
+        btn.setOnAction(e -> {
+            root.setCenter(menuPane);
+            turnBtn.setDisable(false);
+        });
+        HBox btnBox = new HBox(btn);
+        btnBox.setAlignment(Pos.CENTER);
+        subMenu.getChildren().add(btnBox);
+        root.setCenter(subMenu);
+        turnBtn.setDisable(true);
+    }
+
+    private HBox diplomacyMenu() {
+        HBox main = new HBox(20);
+        main.setPadding(new Insets(20));
+        //Left Side
+        ListView nationList = new ListView<>();
+        nationList.setCellFactory(listView -> new ListCell<Nation>() {
+            @Override
+            protected void updateItem(Nation nation, boolean empty) {
+                super.updateItem(nation, empty);
+                setText(empty || nation == null ? null : nation.getName());
+            }
+        });
+        nationList.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, n) -> {
+                    if (n != null) {
+                        updateDiplomacyDetail((Nation) n);
+                    }
+                });
+        nationList.getItems().setAll(engine.getOtherNations());
+        main.getChildren().add(nationList);
+
+        //Right side
+        VBox nationDetails = new VBox(10);
+        diplomacyHeader = new Label("Nation - ");
+        diplomacyDetail = new Label("Select a nation");
+        nationDetails.getChildren().addAll(diplomacyHeader, diplomacyDetail);
+        Button btnSendGift = new Button("Send Gift (-50 Gold)");
+        btnSendGift.setOnAction(e -> {
+            System.out.println("Clicked. Gold=" + yourNation.getValue(Stat.GOLD) +
+                    " Relations=" + selectedNation.getValue(Stat.RELATIONS));
+            if (selectedNation == null || yourNation.getValue(Stat.GOLD) < 50) return;
+            yourNation.setValue(Stat.GOLD, yourNation.getValue(Stat.GOLD) - 50);
+            selectedNation.setValue(Stat.GOLD, selectedNation.getValue(Stat.GOLD) + 50);
+            selectedNation.setValue(Stat.RELATIONS, selectedNation.getValue(Stat.RELATIONS) + 15);
+            updateDiplomacyDetail(selectedNation);
+        });
+        nationDetails.getChildren().add(btnSendGift);
+        main.getChildren().add(nationDetails);
+
+        return main;
+    }
+
+    private void updateDiplomacyDetail(Nation n) {
+        selectedNation = n;
+        diplomacyHeader.setText("Nation - " + n.getName());
+        diplomacyDetail.setText("Current Relation: " + n.getValue(Stat.RELATIONS));
+    }
+
     @Override
     public void onNationChanged(Nation nation) {
         goldLabel.setText("Gold: " + nation.getValue(Stat.GOLD));
@@ -125,7 +204,6 @@ public class App extends Application implements NationListener, GameEngineListen
             int change = e.getDelta();
             current = yourNation.getValue(e.getStat());
             yourNation.setValue(e.getStat(), current + change);
-
         }
     }
 }

@@ -18,6 +18,9 @@ public class GameEngine {
         otherNations.add(new Nation("Maxira", 500, 50, 0));
         otherNations.add(new Nation("Xenos", 300, 50, 0));
     }
+    public List<Nation> getOtherNations() {
+        return otherNations;
+    }
     public void nextTurn() {
         adjustStat(Stat.GOLD, -10);
         turn++;
@@ -45,6 +48,10 @@ public class GameEngine {
 
     public void loadEvents() {
         events = new EventLoader().loadAll();
+        for (GameEvent e : events) {
+            System.out.println("Loaded: id=" + e.getId() + " chance=" + e.getChance() +
+                    " text=" + e.getText().substring(0, Math.min(40, e.getText().length())));
+        }
     }
 
     public List<GameEvent> getEventList() {
@@ -57,7 +64,7 @@ public class GameEngine {
             case SOURCE -> nation = n;
             case PLAYER ->  nation = playerNation;
         }
-        int stat = playerNation.getValue(c.getStat());
+        int stat = nation.getValue(c.getStat());
         switch (c.getOp()) {
             case EQUAL -> {
                 return stat == c.getValue();

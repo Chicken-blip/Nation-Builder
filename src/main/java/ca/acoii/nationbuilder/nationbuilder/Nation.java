@@ -12,7 +12,7 @@ public class Nation {
 
     //Constructors
     public Nation() {
-        this("Fantasia", 100, 20, 0);
+        this("Fantasia", 500, 20, 0);
     }
     public Nation(String name, int gold, int stability) {
         this(name, gold, stability, 0);
