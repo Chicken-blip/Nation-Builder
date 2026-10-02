@@ -3,16 +3,14 @@ package ca.acoii.nationbuilder.nationbuilder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Nation {
     private Map<Stat, Integer> stats = new HashMap<>();
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
     private Map<Stat, Integer> sellPrices, buyPrices;
+    private Set<AgreementType> agreements = new HashSet<>();
 
     //Constructors
     public Nation() {
@@ -59,6 +57,19 @@ public class Nation {
             notifyListeners();
         }
     }
+
+    public boolean hasAgreement(AgreementType a) {
+        return agreements.contains(a);
+    }
+    public void addAgreement(AgreementType a) {
+        agreements.add(a);
+    }
+    public void removeAgreement(AgreementType a) {
+        agreements.remove(a);
+    }
+
+    public int buyPrice(Stat s) {return buyPrices.get(s);}
+    public int sellPrice(Stat s) {return sellPrices.get(s);}
 
     //Listener Methods
     public void addListener(NationListener listener) {

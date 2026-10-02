@@ -99,9 +99,8 @@ public class App extends Application implements NationListener, GameEngineListen
         stage.show();
 
         //Testing Area
-        for (GameEvent evt : engine.getEventList()) {
-            System.out.println("Event: " + evt.getText());
-        }
+
+        
     }
 
     private void showEventPopup(FiredEvent evt) {
@@ -272,6 +271,8 @@ public class App extends Application implements NationListener, GameEngineListen
     @Override
     public void onTurnAdvanced(GameEngine game) {
         turnLabel.setText("Turn: " + game.getTurn());
+
+
     }
 
     private void applyEffects(EventResult evtResult) {

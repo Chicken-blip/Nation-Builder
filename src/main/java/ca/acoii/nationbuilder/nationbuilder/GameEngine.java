@@ -19,8 +19,12 @@ public class GameEngine {
         return otherNations;
     }
     public void nextTurn() {
-        adjustStat(Stat.GOLD, -10);
         applyBuildingOutput();
+        for (Nation n : otherNations) {
+            if (n.getValue(Stat.RELATIONS) < 0) {
+                n.removeAgreement(AgreementType.TRADE);
+            }
+        }
         turn++;
         notifyListeners();
     }
@@ -161,6 +165,28 @@ public class GameEngine {
                 return true;
         }
         return false;
+    }
+
+    public void establishTradeAgreement(Nation n) {
+        n.addAgreement(AgreementType.TRADE);
+    }
+
+    public boolean buyResource(Nation seller, Stat resource, int qty) {
+        if (!seller.hasAgreement(AgreementType.TRADE)) return false;
+        int cost = seller.buyPrice(resource) * qty;
+        if (playerNation.getValue(Stat.GOLD) < cost) return false;
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) - cost);
+        playerNation.setValue(resource, playerNation.getValue(resource) + qty);
+        return true;
+    }
+
+    public boolean sellResource(Nation buyer, Stat resource, int qty) {
+        if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
+        int revenue = buyer.sellPrice(resource) * qty;
+        if (playerNation.getValue(resource) < qty) return false;
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
+        playerNation.setValue(resource, playerNation.getValue(resource) - qty);
+        return true;
     }
 
     private void applyEffect(EventEffect e) {
