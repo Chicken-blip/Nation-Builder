@@ -1,0 +1,10 @@
+{
+  "name": "Iron Mine",
+  "cost": [
+    {"stat": "WOOD", "delta": -40},
+    {"stat": "STONE", "delta": -20}
+  ],
+  "output": [
+    {"stat": "IRON", "delta": 6}
+  ]
+}

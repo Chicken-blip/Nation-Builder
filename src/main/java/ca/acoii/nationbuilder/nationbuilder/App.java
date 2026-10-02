@@ -33,6 +33,7 @@ public class App extends Application implements NationListener, GameEngineListen
         yourNation.addListener(this);
         engine.addListener(this);
         engine.loadEvents();
+        engine.loadBuildings();
 
         //Resource items
         goldLabel = new Label();
@@ -44,9 +45,6 @@ public class App extends Application implements NationListener, GameEngineListen
         //Menu Items
         Button btn1 = new Button("Construction");
         btn1.setPrefWidth(100);
-        btn1.setOnAction(e -> {
-            showSubMenu("Construction", new Label("Coming soon..."));
-        });
         Button btn2 = new Button("Trade");
         btn2.setPrefWidth(100);
         Button btn3 = new Button("Diplomacy");
@@ -56,7 +54,12 @@ public class App extends Application implements NationListener, GameEngineListen
         btn3.setPrefWidth(100);
         Button btn4 = new Button("War");
         btn4.setPrefWidth(100);
-        menuPane = new TilePane(10, 10, btn1, btn2, btn3, btn4);
+        Button btn5 = new Button("Inventory");
+        btn5.setOnAction(e -> {
+            showSubMenu("Inventory", inventoryMenu());
+        });
+        btn5.setPrefWidth(100);
+        menuPane = new TilePane(10, 10, btn1, btn2, btn3, btn4, btn5);
         menuPane.setPrefColumns(3);
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
@@ -139,6 +142,21 @@ public class App extends Application implements NationListener, GameEngineListen
         turnBtn.setDisable(true);
     }
 
+    private VBox inventoryMenu() {
+        VBox main = new VBox(10);
+        main.setPadding(new Insets(50));
+
+        List<Stat> stats = new ArrayList<>(List.of(new Stat[]{Stat.GOLD, Stat.RELATIONS, Stat.STABILITY}));
+        Label n;
+        for (Stat s : Stat.values()) {
+            if (!stats.contains(s)) {
+                n = new Label(s.toString() + ": " + yourNation.getValue(s));
+                main.getChildren().add(n);
+            }
+        }
+
+        return main;
+    }
     private HBox diplomacyMenu() {
         HBox main = new HBox(20);
         main.setPadding(new Insets(20));

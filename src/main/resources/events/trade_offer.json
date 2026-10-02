@@ -1,5 +1,4 @@
 {
-  "id": 3,
   "text": "{source} wants to trade with your nation",
   "priority": "LOW",
   "chance": 0.05,

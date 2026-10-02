@@ -1,5 +1,4 @@
 {
-  "id": 4,
   "text": "Your nation is growing unstable, and riots are growing in the region.",
   "priority": "LOW",
   "chance": 0.05,

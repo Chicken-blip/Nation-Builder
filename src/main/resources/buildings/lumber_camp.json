@@ -1,0 +1,9 @@
+{
+  "name": "Lumber Camp",
+  "cost": [
+    {"stat": "WOOD", "delta": -50}
+  ],
+  "output": [
+    {"stat": "WOOD", "delta": 10}
+  ]
+}

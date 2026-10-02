@@ -1,17 +1,16 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class GameEngine {
     private final Nation playerNation;
     private int turn;
     private final List<GameEngineListener> listeners = new ArrayList<>();
     private List<GameEvent> events;
+    private List<Building> buildings;
     private List<Nation> otherNations = new ArrayList<>();
+    private Map<String, Integer> builtBuildings = new HashMap<>();
     public GameEngine(Nation nation) {
         playerNation = nation;
         turn = 1;
@@ -56,6 +55,13 @@ public class GameEngine {
 
     public List<GameEvent> getEventList() {
         return this.events;
+    }
+
+    public void loadBuildings() {
+        buildings = new BuildingLoader().loadAll();
+        for (Building b : buildings) {
+            System.out.println("Building: " + b.getName());
+        }
     }
 
     private boolean evaluateCondition(Condition c, Nation n) {

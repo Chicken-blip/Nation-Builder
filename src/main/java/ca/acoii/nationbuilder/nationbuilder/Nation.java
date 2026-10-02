@@ -22,9 +22,11 @@ public class Nation {
         stats.put(Stat.GOLD, gold);
         stats.put(Stat.STABILITY, stability);
         stats.put(Stat.RELATIONS, relation);
+        stats.put(Stat.WOOD, 100);
+        stats.put(Stat.STONE, 0);
         stats.put(Stat.FOOD, 0);
-        stats.put(Stat.METAL, 0);
-        stats.put(Stat.WOOD, 0);
+        stats.put(Stat.IRON, 20);
+        stats.put(Stat.COAL, 0);
     }
 
     //General Getter - use for all getting (except for name)

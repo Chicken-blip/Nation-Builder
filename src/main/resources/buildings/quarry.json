@@ -1,0 +1,9 @@
+{
+  "name": "Quarry",
+  "cost": [
+    {"stat": "WOOD", "delta": -30}
+  ],
+  "output": [
+    {"stat": "STONE", "delta": 8}
+  ]
+}

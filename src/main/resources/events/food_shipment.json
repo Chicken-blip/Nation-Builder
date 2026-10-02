@@ -1,5 +1,4 @@
 {
-  "id": 2,
   "text": "{source} is sending food to your nation. How considerate!",
   "priority": "LOW",
   "chance": 0.1,
