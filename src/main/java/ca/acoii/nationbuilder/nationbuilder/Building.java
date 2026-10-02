@@ -37,4 +37,6 @@ public class Building {
     public void setOutput(List<EventEffect> output) {
         this.output = output;
     }
+
+
 }

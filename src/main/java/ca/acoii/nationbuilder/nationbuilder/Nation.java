@@ -1,5 +1,8 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +12,7 @@ public class Nation {
     private Map<Stat, Integer> stats = new HashMap<>();
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
+    private Map<Stat, Integer> sellPrices, buyPrices;
 
     //Constructors
     public Nation() {
@@ -28,10 +32,20 @@ public class Nation {
         stats.put(Stat.IRON, 20);
         stats.put(Stat.COAL, 0);
     }
+    //Jackson Constructor
+    @JsonCreator
+    public Nation(@JsonProperty("name") String name, @JsonProperty("gold") int gold, @JsonProperty("stability") int stability, @JsonProperty("relations") int relations, @JsonProperty("buyPrices") Map<Stat, Integer> buyPrices, @JsonProperty("sellPrices") Map<Stat, Integer> sellPrices) {
+        this.name = name;
+        this.buyPrices = buyPrices;
+        this.sellPrices = sellPrices;
+        setValue(Stat.GOLD, gold);
+        setValue(Stat.STABILITY, stability);
+        setValue(Stat.RELATIONS, relations);
+    }
 
     //General Getter - use for all getting (except for name)
     public int getValue(Stat stat) {
-        return stats.get(stat);
+        return stats.getOrDefault(stat, 0);
     }
     //Exception - Name getter
     public String getName() {
@@ -40,8 +54,8 @@ public class Nation {
 
     //General Setter - use for all setting
     public void setValue(Stat stat, int newValue) {
-        if (stats.get(stat) != newValue) {
-            stats.replace(stat, newValue);
+        if (stats.getOrDefault(stat, 0) != newValue) {
+            stats.put(stat, newValue);
             notifyListeners();
         }
     }

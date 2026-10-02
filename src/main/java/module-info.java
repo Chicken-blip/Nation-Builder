@@ -6,6 +6,6 @@ module ca.acoii.nationbuilder.nationbuilder {
     requires com.fasterxml.jackson.core;
 
 
-    opens ca.acoii.nationbuilder.nationbuilder to javafx.fxml;
+    opens ca.acoii.nationbuilder.nationbuilder to javafx.fxml, com.fasterxml.jackson.databind;
     exports ca.acoii.nationbuilder.nationbuilder;
 }

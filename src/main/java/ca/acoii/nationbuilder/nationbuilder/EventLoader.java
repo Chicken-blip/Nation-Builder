@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventLoader {
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     public GameEvent load(String filename) {
         try {
             InputStream inStrm = getClass().getResourceAsStream("/events/" + filename);

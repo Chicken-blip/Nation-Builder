@@ -1,0 +1,18 @@
+{
+  "name": "Maxira",
+  "gold": 500,
+  "stability": 50,
+  "relations": 0,
+  "buyPrices": {
+    "WOOD": 8,
+    "STONE": 14,
+    "IRON": 18,
+    "COAL": 16
+  },
+  "sellPrices": {
+    "WOOD": 5,
+    "STONE": 9,
+    "IRON": 11,
+    "COAL": 10
+  }
+}

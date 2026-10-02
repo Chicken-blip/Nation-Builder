@@ -14,16 +14,27 @@ public class GameEngine {
     public GameEngine(Nation nation) {
         playerNation = nation;
         turn = 1;
-        otherNations.add(new Nation("Maxira", 500, 50, 0));
-        otherNations.add(new Nation("Xenos", 300, 50, 0));
     }
     public List<Nation> getOtherNations() {
         return otherNations;
     }
     public void nextTurn() {
         adjustStat(Stat.GOLD, -10);
+        applyBuildingOutput();
         turn++;
         notifyListeners();
+    }
+
+    private void applyBuildingOutput() {
+        for (String s : builtBuildings.keySet()) {
+            Building b = getBuilding(s);
+            int count = builtBuildings.get(s);
+            for (EventEffect e : b.getOutput()) {
+                for (int i = 0; i < count; i++) {
+                    applyEffect(e);
+                }
+            }
+        }
     }
 
     private void adjustStat(Stat stat, int change) {
@@ -64,6 +75,13 @@ public class GameEngine {
         }
     }
 
+    public void loadNations() {
+        otherNations = new NationLoader().loadAll();
+        for (Nation n : otherNations) {
+            System.out.println("Nation: " + n.getName());
+        }
+    }
+
     private boolean evaluateCondition(Condition c, Nation n) {
         Nation nation = null;
         switch (c.getTarget()) {
@@ -93,6 +111,11 @@ public class GameEngine {
         }
         return false;
     }
+
+    private boolean evaluateCost(EventEffect e) {
+        return playerNation.getValue(e.getStat()) >= Math.abs(e.getDelta());
+    }
+    
     private boolean evaluateAll(List<Condition> conditions, Nation n) {
         for (Condition c : conditions) {
             if (!evaluateCondition(c, n)) {return false;}
@@ -120,4 +143,44 @@ public class GameEngine {
         return null;
     }
 
+    public boolean build(String building) {
+        Building b = getBuilding(building);
+        if (b != null) {
+                //Checks each cost
+                for (EventEffect e : b.getCost()) {
+                    if (!evaluateCost(e)) {
+                        return false;
+                    }
+                }
+                //Deducts the cost
+                for (EventEffect e : b.getCost()) {
+                    applyEffect(e);
+                }
+                //Increments this building's count
+                builtBuildings.put(b.getName(), builtBuildings.getOrDefault(b.getName(), 0) + 1);
+                return true;
+        }
+        return false;
+    }
+
+    private void applyEffect(EventEffect e) {
+        playerNation.setValue(e.getStat(), playerNation.getValue(e.getStat()) + e.getDelta());
+    }
+
+    private Building getBuilding(String n) {
+        for (Building b : buildings) {
+            if (Objects.equals(b.getName(), n)) {
+                return b;
+            }
+        }
+        return null;
+    }
+
+    public List<Building> getBuildings() {
+        return buildings;
+    }
+
+    public int getBuildingCount(Building b) {
+        return builtBuildings.getOrDefault(b.getName(), 0);
+    }
 }

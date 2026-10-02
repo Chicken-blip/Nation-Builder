@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuildingLoader {
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     public Building load(String filename) {
         try {
             InputStream inStrm = getClass().getResourceAsStream("/buildings/" + filename);
             return mapper.readValue(inStrm, Building.class);
         } catch (IOException e) {
-            throw new RuntimeException("Event file not found: " + filename);
+            throw new RuntimeException("Building file not found: " + filename);
         }
     }
     public List<Building> loadAll() {

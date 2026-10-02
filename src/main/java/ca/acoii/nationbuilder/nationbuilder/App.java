@@ -8,6 +8,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
+import org.w3c.dom.events.Event;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         yourNation.addListener(this);
         engine.addListener(this);
+        engine.loadNations();
         engine.loadEvents();
         engine.loadBuildings();
 
@@ -41,26 +43,36 @@ public class App extends Application implements NationListener, GameEngineListen
         turnLabel = new Label();
         HBox resourcePane = new HBox(10, goldLabel, stabLabel, turnLabel);
         resourcePane.setAlignment(Pos.CENTER);
-        resourcePane.setPadding(new Insets(10,20,10,20));
+        resourcePane.setPadding(new Insets(10,100,10,100));
         //Menu Items
+        int btnWidth = 100;
+        int btnHeight = 30;
         Button btn1 = new Button("Construction");
-        btn1.setPrefWidth(100);
+        btn1.setOnAction(e -> {
+            showSubMenu("Construction", constructionMenu());
+        });
+        btn1.setPrefWidth(btnWidth);
+        btn1.setPrefHeight(btnHeight);
         Button btn2 = new Button("Trade");
-        btn2.setPrefWidth(100);
+        btn2.setPrefWidth(btnWidth);
+        btn2.setPrefHeight(btnHeight);
         Button btn3 = new Button("Diplomacy");
         btn3.setOnAction(e -> {
             showSubMenu("Diplomacy", diplomacyMenu());
         });
-        btn3.setPrefWidth(100);
+        btn3.setPrefWidth(btnWidth);
+        btn3.setPrefHeight(btnHeight);
         Button btn4 = new Button("War");
-        btn4.setPrefWidth(100);
+        btn4.setPrefWidth(btnWidth);
+        btn4.setPrefHeight(btnHeight);
         Button btn5 = new Button("Inventory");
         btn5.setOnAction(e -> {
             showSubMenu("Inventory", inventoryMenu());
         });
-        btn5.setPrefWidth(100);
-        menuPane = new TilePane(10, 10, btn1, btn2, btn3, btn4, btn5);
-        menuPane.setPrefColumns(3);
+        btn5.setPrefWidth(btnWidth);
+        btn5.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5);
+        menuPane.setPrefColumns(4);
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
         turnBtn = new Button("NEXT TURN");
@@ -81,7 +93,7 @@ public class App extends Application implements NationListener, GameEngineListen
         root.setBottom(bottomPane);
 
         rootStack = new StackPane(root);
-        stage.setScene(new Scene(rootStack, 500, 359));
+        stage.setScene(new Scene(rootStack, 600, 400));
         onNationChanged(yourNation);
         onTurnAdvanced(engine);
         stage.show();
@@ -157,6 +169,52 @@ public class App extends Application implements NationListener, GameEngineListen
 
         return main;
     }
+    private GridPane constructionMenu() {
+        GridPane grid = new GridPane();
+        grid.setHgap(30);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        grid.add(new Label("Name"), 0, 0);
+        grid.add(new Label("Building cost"), 1, 0);
+        grid.add(new Label("Output per turn"), 2, 0);
+        grid.add(new Label("# of Buildings"), 3, 0);
+
+        int row = 1;
+        for (Building b : engine.getBuildings()) {
+            Label name = new Label(b.getName());
+            Label cost = new Label(formatEffects(b.getCost()));
+            Label output = new Label(formatEffects(b.getOutput()));
+            Label count = new Label("Owned: " + engine.getBuildingCount(b));
+            Button buildBtn = new Button("Build");
+            //TODO: Add buildBtn method
+            buildBtn.setOnAction(e -> {
+                engine.build(b.getName());
+                showSubMenu("Construction", constructionMenu());
+            });
+            grid.add(name, 0, row);
+            grid.add(cost, 1, row);
+            grid.add(output, 2, row);
+            grid.add(count, 3, row);
+            grid.add(buildBtn, 4, row);
+
+            row++;
+        }
+
+        return grid;
+    }
+
+    private String formatEffects(List<EventEffect> cost) {
+        String str = "";
+        for (EventEffect e : cost) {
+            str += e.getStat() + ": " + e.getDelta();
+            if (e != cost.getLast()) {
+                str += ", ";
+            }
+        }
+        return str;
+    }
+
     private HBox diplomacyMenu() {
         HBox main = new HBox(20);
         main.setPadding(new Insets(20));

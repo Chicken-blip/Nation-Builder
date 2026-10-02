@@ -1,0 +1,18 @@
+{
+  "name": "Pensua",
+  "gold": 17500,
+  "stability": 100,
+  "relations": 0,
+  "buyPrices": {
+    "WOOD": 20,
+    "STONE": 22,
+    "IRON": 28,
+    "COAL": 24
+  },
+  "sellPrices": {
+    "WOOD": 18,
+    "STONE": 20,
+    "IRON": 25,
+    "COAL": 22
+  }
+}
