@@ -2,5 +2,8 @@
   "lumber_camp.json",
   "quarry.json",
   "iron_mine.json",
-  "coal_mine.json"
+  "coal_mine.json",
+  "gold_mine.json",
+  "farm.json",
+  "power_plant.json"
 ]

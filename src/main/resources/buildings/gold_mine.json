@@ -1,0 +1,12 @@
+{
+  "name": "Gold Mine",
+  "cost": [
+    {"stat": "WOOD", "delta": -50},
+    {"stat": "STONE", "delta": -25}
+  ],
+  "output": [
+    {"stat": "GOLD", "delta": 3}
+  ],
+  "powerRequired": 5,
+  "powerOutput": 0
+}

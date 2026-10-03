@@ -11,8 +11,12 @@ public class GameEngine {
     private List<Building> buildings;
     private List<Nation> otherNations = new ArrayList<>();
     private Map<String, Integer> builtBuildings = new HashMap<>();
+    private Map<Stat, Double> consumables = new HashMap<>();
     public GameEngine(Nation nation) {
         playerNation = nation;
+        consumables.put(Stat.FOOD, 0.01);
+        consumables.put(Stat.CLOTH, 0.002);
+        builtBuildings.put("Power Plant", 1);
         turn = 1;
     }
     public List<Nation> getOtherNations() {
@@ -21,6 +25,7 @@ public class GameEngine {
     public void nextTurn() {
         adjustStat(Stat.GOLD,-10);
         applyBuildingOutput();
+        populationEffects();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {
                 n.removeAgreement(AgreementType.TRADE);
@@ -31,8 +36,10 @@ public class GameEngine {
     }
 
     private void applyBuildingOutput() {
+        int capacity = getPowerSupply() - getPowerDemand();
         for (String s : builtBuildings.keySet()) {
             Building b = getBuilding(s);
+            if (b.getPowerRequired() > 0 && capacity < 0) continue;
             int count = builtBuildings.get(s);
             for (EventEffect e : b.getOutput()) {
                 for (int i = 0; i < count; i++) {
@@ -163,8 +170,10 @@ public class GameEngine {
                 }
                 //Increments this building's count
                 builtBuildings.put(b.getName(), builtBuildings.getOrDefault(b.getName(), 0) + 1);
+                notifyListeners();
                 return true;
         }
+        notifyListeners();
         return false;
     }
 
@@ -210,4 +219,54 @@ public class GameEngine {
     public int getBuildingCount(Building b) {
         return builtBuildings.getOrDefault(b.getName(), 0);
     }
+
+    public void populationEffects() {
+        int pop = playerNation.getValue(Stat.POPULATION);
+        int shortages = 0;
+        // Consumable changes
+        for (Stat s : consumables.keySet()) {
+            int actualComp = (int) (playerNation.getValue(s) - (consumables.get(s) * playerNation.getValue(Stat.POPULATION)));
+
+            //Check if there's a shortage
+            if (actualComp < 0) {
+                shortages++;
+            }
+
+            //Sets the value to either the amount after consumption, or 0 if there's a shortage
+            playerNation.setValue(s, Integer.max(actualComp, 0));
+        }
+
+        //Population changes!
+        if (shortages == 0) {
+            //No shortages - population grows
+            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) + (pop / 100));
+        } else {
+            //Shortages exist - population declines
+            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) - (pop / 20));
+        }
+
+        //Stability changes for extreme starvation
+        if (shortages > 1) {
+            playerNation.setValue(Stat.STABILITY, playerNation.getValue(Stat.STABILITY) - 5);
+        }
+    }
+
+    public int getPowerSupply() {
+        int sum = 0;
+        if (builtBuildings.isEmpty()) return 0;
+        for (String b: builtBuildings.keySet()) {
+            sum += (getBuilding(b).getPowerOutput()) * builtBuildings.get(b);
+        }
+        return sum;
+    }
+    public int getPowerDemand() {
+        int sum = 0;
+        if (builtBuildings.isEmpty()) return 0;
+        for (String b: builtBuildings.keySet()) {
+            sum += (getBuilding(b).getPowerRequired()) * builtBuildings.get(b);
+        }
+        return sum;
+    }
+
+
 }

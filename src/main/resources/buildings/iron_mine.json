@@ -6,5 +6,7 @@
   ],
   "output": [
     {"stat": "IRON", "delta": 6}
-  ]
+  ],
+  "powerRequired": 5,
+  "powerOutput": 0
 }

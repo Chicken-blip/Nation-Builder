@@ -5,6 +5,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class App extends Application implements NationListener, GameEngineListener {
-    private Label goldLabel, stabLabel, turnLabel;
+    private Label goldLabel, stabLabel, popLabel, powerLabel, turnLabel;
     private StackPane rootStack;
     BorderPane root;
     TilePane menuPane;
@@ -40,10 +42,12 @@ public class App extends Application implements NationListener, GameEngineListen
         //Resource items
         goldLabel = new Label();
         stabLabel = new Label();
+        popLabel = new Label();
+        powerLabel = new Label();
         turnLabel = new Label();
-        HBox resourcePane = new HBox(10, goldLabel, stabLabel, turnLabel);
+        HBox resourcePane = new HBox(10, goldLabel, stabLabel, popLabel, powerLabel, turnLabel);
         resourcePane.setAlignment(Pos.CENTER);
-        resourcePane.setPadding(new Insets(10,100,10,100));
+        resourcePane.setPadding(new Insets(10,50,10,50));
         //Menu Items
         int btnWidth = 100;
         int btnHeight = 30;
@@ -143,6 +147,7 @@ public class App extends Application implements NationListener, GameEngineListen
         Label t = new Label(title);
         t.setMaxWidth(Double.MAX_VALUE);
         t.setAlignment(Pos.CENTER);
+
         VBox subMenu = new VBox(10, t, content);
         Button btn = new Button("Back");
         btn.setOnAction(e -> {
@@ -152,7 +157,9 @@ public class App extends Application implements NationListener, GameEngineListen
         HBox btnBox = new HBox(btn);
         btnBox.setAlignment(Pos.CENTER);
         subMenu.getChildren().add(btnBox);
-        root.setCenter(subMenu);
+        ScrollPane scrl = new ScrollPane(subMenu);
+        scrl.setFitToWidth(true);
+        root.setCenter(scrl);
         turnBtn.setDisable(true);
     }
 
@@ -185,11 +192,13 @@ public class App extends Application implements NationListener, GameEngineListen
         int row = 1;
         for (Building b : engine.getBuildings()) {
             Label name = new Label(b.getName());
-            Label cost = new Label(formatEffects(b.getCost()));
-            Label output = new Label(formatEffects(b.getOutput()));
+            TitledPane cost = new TitledPane();
+            cost.setText("Expand to see cost");
+            cost.setContent(new VBox(10, new Label(formatEffects(b.getCost(), 1))));
+            cost.setExpanded(false);
+            Label output = new Label(formatEffects(b.getOutput(), 0));
             Label count = new Label("Owned: " + engine.getBuildingCount(b));
             Button buildBtn = new Button("Build");
-            //TODO: Add buildBtn method
             buildBtn.setOnAction(e -> {
                 engine.build(b.getName());
                 showSubMenu("Construction", constructionMenu());
@@ -206,12 +215,26 @@ public class App extends Application implements NationListener, GameEngineListen
         return grid;
     }
 
-    private String formatEffects(List<EventEffect> cost) {
+    private String formatEffects(List<EventEffect> cost, int type) {
         String str = "";
-        for (EventEffect e : cost) {
-            str += e.getStat() + ": " + e.getDelta();
-            if (e != cost.getLast()) {
-                str += ", ";
+        switch (type) {
+            case 0 -> {
+                //Default, longlist
+                for (EventEffect e : cost) {
+                    str += e.getStat() + ": " + e.getDelta();
+                    if (e != cost.getLast()) {
+                        str += ", ";
+                    }
+                }
+            }
+            case 1 -> {
+                //Actual list ver
+                for (EventEffect e : cost) {
+                    str += e.getStat() + ": " + e.getDelta();
+                    if (e != cost.getLast()) {
+                        str += "\n";
+                    }
+                }
             }
         }
         return str;
@@ -224,6 +247,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Left Side
         ListView nationList = new ListView<>();
+        nationList.setPrefHeight(150);
         nationList.setCellFactory(listView -> new ListCell<Nation>() {
             @Override
             protected void updateItem(Nation nation, boolean empty) {
@@ -297,7 +321,8 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Left Side - list of resources
         ListView<Stat> resources = new ListView<>();
-        List<Stat> excludes = List.of(new Stat[]{Stat.GOLD, Stat.RELATIONS, Stat.STABILITY});
+        resources.setPrefHeight(150);
+        List<Stat> excludes = List.of(new Stat[]{Stat.GOLD, Stat.RELATIONS, Stat.STABILITY, Stat.POPULATION});
         for (Stat s : Stat.values()) {
             if (!excludes.contains(s)) {
                 resources.getItems().add(s);
@@ -398,6 +423,14 @@ public class App extends Application implements NationListener, GameEngineListen
     public void onNationChanged(Nation nation) {
         goldLabel.setText("Gold: " + nation.getValue(Stat.GOLD));
         stabLabel.setText("Stability: " + nation.getValue(Stat.STABILITY));
+        popLabel.setText("Population: " + nation.getValue(Stat.POPULATION));
+        if (engine.getPowerSupply() < engine.getPowerDemand()) {
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply() + " | HALTED");
+            powerLabel.setTextFill(Color.RED);
+        } else {
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply());
+            powerLabel.setTextFill(Color.BLACK);
+        }
     }
 
     @Override

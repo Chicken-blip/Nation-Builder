@@ -1,0 +1,12 @@
+{
+  "name": "Farm",
+  "cost": [
+    {"stat": "WOOD", "delta": -30},
+    {"stat": "STONE", "delta": -20}
+  ],
+  "output": [
+    {"stat": "FOOD", "delta": 15}
+  ],
+  "powerRequired": 3,
+  "powerOutput": 0
+}

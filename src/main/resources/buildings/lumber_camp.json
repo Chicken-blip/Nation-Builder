@@ -5,5 +5,7 @@
   ],
   "output": [
     {"stat": "WOOD", "delta": 10}
-  ]
+  ],
+  "powerRequired": 2,
+  "powerOutput": 0
 }

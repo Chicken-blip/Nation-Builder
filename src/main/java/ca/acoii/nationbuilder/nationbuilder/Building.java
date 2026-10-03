@@ -7,6 +7,7 @@ public class Building {
     private String name;
     private List<EventEffect> cost;
     private List<EventEffect> output;
+    private int powerRequired = 0, powerOutput = 0;
 
     public Building() {
         cost = new ArrayList<>();
@@ -37,6 +38,23 @@ public class Building {
     public void setOutput(List<EventEffect> output) {
         this.output = output;
     }
+
+    public int getPowerRequired() {
+        return powerRequired;
+    }
+
+    public void setPowerRequired(int powerRequired) {
+        this.powerRequired = powerRequired;
+    }
+
+    public int getPowerOutput() {
+        return powerOutput;
+    }
+
+    public void setPowerOutput(int powerOutput) {
+        this.powerOutput = powerOutput;
+    }
+
 
 
 }

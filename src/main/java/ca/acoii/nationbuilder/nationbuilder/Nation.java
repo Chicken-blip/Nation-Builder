@@ -26,9 +26,11 @@ public class Nation {
         stats.put(Stat.RELATIONS, relation);
         stats.put(Stat.WOOD, 100);
         stats.put(Stat.STONE, 0);
-        stats.put(Stat.FOOD, 0);
+        stats.put(Stat.CLOTH, 0);
         stats.put(Stat.IRON, 20);
         stats.put(Stat.COAL, 0);
+        stats.put(Stat.FOOD, 300);
+        stats.put(Stat.POPULATION, 2000);
     }
     //Jackson Constructor
     @JsonCreator

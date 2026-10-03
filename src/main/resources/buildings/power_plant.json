@@ -1,0 +1,13 @@
+{
+  "name": "Power Plant",
+  "cost": [
+    {"stat": "WOOD", "delta": -60},
+    {"stat": "STONE", "delta": -40},
+    {"stat": "IRON", "delta": -20}
+  ],
+  "output": [
+
+  ],
+  "powerRequired": 0,
+  "powerOutput": 30
+}
