@@ -7,12 +7,14 @@
     "WOOD": 10,
     "STONE": 12,
     "IRON": 20,
-    "COAL": 15
+    "COAL": 15,
+    "FOOD": 24
   },
   "sellPrices": {
     "WOOD": 6,
     "STONE": 7,
     "IRON": 12,
-    "COAL": 9
+    "COAL": 9,
+    "FOOD": 14
   }
 }

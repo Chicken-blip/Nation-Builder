@@ -8,7 +8,6 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
-import org.w3c.dom.events.Event;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +22,8 @@ public class App extends Application implements NationListener, GameEngineListen
     private Nation yourNation = new Nation();
     private GameEngine engine = new GameEngine(yourNation);
     //Diplomacy Info
-    private Label diplomacyHeader, diplomacyDetail;
+    private Label diplomacyHeader, diplomacyDetail, diplomacyAgreements;
+    private List<Button> diplomacyBtns = new ArrayList<>();
     private Nation selectedNation;
 
     @Override
@@ -54,6 +54,9 @@ public class App extends Application implements NationListener, GameEngineListen
         btn1.setPrefWidth(btnWidth);
         btn1.setPrefHeight(btnHeight);
         Button btn2 = new Button("Trade");
+        btn2.setOnAction(e -> {
+            showSubMenu("Trade", tradeMenu());
+        });
         btn2.setPrefWidth(btnWidth);
         btn2.setPrefHeight(btnHeight);
         Button btn3 = new Button("Diplomacy");
@@ -100,7 +103,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Testing Area
 
-        
+
     }
 
     private void showEventPopup(FiredEvent evt) {
@@ -217,6 +220,8 @@ public class App extends Application implements NationListener, GameEngineListen
     private HBox diplomacyMenu() {
         HBox main = new HBox(20);
         main.setPadding(new Insets(20));
+        diplomacyBtns = new ArrayList<>();
+
         //Left Side
         ListView nationList = new ListView<>();
         nationList.setCellFactory(listView -> new ListCell<Nation>() {
@@ -239,7 +244,8 @@ public class App extends Application implements NationListener, GameEngineListen
         VBox nationDetails = new VBox(10);
         diplomacyHeader = new Label("Nation - ");
         diplomacyDetail = new Label("Select a nation");
-        nationDetails.getChildren().addAll(diplomacyHeader, diplomacyDetail);
+        diplomacyAgreements = new Label("");
+        nationDetails.getChildren().addAll(diplomacyHeader, diplomacyDetail, diplomacyAgreements);
         Button btnSendGift = new Button("Send Gift (-50 Gold)");
         btnSendGift.setOnAction(e -> {
             System.out.println("Clicked. Gold=" + yourNation.getValue(Stat.GOLD) +
@@ -250,7 +256,16 @@ public class App extends Application implements NationListener, GameEngineListen
             selectedNation.setValue(Stat.RELATIONS, selectedNation.getValue(Stat.RELATIONS) + 15);
             updateDiplomacyDetail(selectedNation);
         });
-        nationDetails.getChildren().add(btnSendGift);
+        btnSendGift.setDisable(true);
+        diplomacyBtns.add(btnSendGift);
+        Button btnTradeAgreement = new Button("Send Trade Agreement");
+        btnTradeAgreement.setOnAction(e -> {
+            engine.establishTradeAgreement(selectedNation);
+            updateDiplomacyDetail(selectedNation);
+        });
+        btnTradeAgreement.setDisable(true);
+        diplomacyBtns.add(btnTradeAgreement);
+        nationDetails.getChildren().addAll(btnSendGift, btnTradeAgreement);
         main.getChildren().add(nationDetails);
 
         return main;
@@ -260,6 +275,123 @@ public class App extends Application implements NationListener, GameEngineListen
         selectedNation = n;
         diplomacyHeader.setText("Nation - " + n.getName());
         diplomacyDetail.setText("Current Relation: " + n.getValue(Stat.RELATIONS));
+        if (selectedNation.getAgreements().isEmpty()) {
+            diplomacyAgreements.setText("Agreements: N/A");
+        } else {
+            String str = "Agreements: ";
+            for (AgreementType a : selectedNation.getAgreements()) {
+                str += a.toString();
+                if (!(selectedNation.getAgreements().getLast() == a)) {
+                    str += ", ";
+                }
+            }
+            diplomacyAgreements.setText(str);
+        }
+        diplomacyBtns.getFirst().setDisable(yourNation.getValue(Stat.GOLD) < 50);
+        diplomacyBtns.get(1).setDisable(selectedNation.hasAgreement(AgreementType.TRADE));
+    }
+
+    private HBox tradeMenu() {
+        HBox main = new HBox(20);
+        main.setPadding(new Insets(20));
+
+        //Left Side - list of resources
+        ListView<Stat> resources = new ListView<>();
+        List<Stat> excludes = List.of(new Stat[]{Stat.GOLD, Stat.RELATIONS, Stat.STABILITY});
+        for (Stat s : Stat.values()) {
+            if (!excludes.contains(s)) {
+                resources.getItems().add(s);
+            }
+        }
+        resources.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, s) -> {
+                    if (s != null) {
+                        //Update right-side of pane
+                        if (main.getChildren().size() > 1) {
+                            main.getChildren().removeLast();
+                        }
+                        main.getChildren().add(tradeSideMenu(s));
+
+                    }
+                });
+
+        main.getChildren().add(resources);
+
+        return main;
+    }
+
+    private VBox tradeSideMenu(Stat s) {
+        //Right Side - VBox with quanitty input, details of other nations, and buy/sell btns
+        VBox side = new VBox(20);
+        side.setPadding(new Insets(20));
+
+        //Field for quantity input
+        TextField qtyInput = new TextField("Enter an amount here");
+
+        //Grid for all the nation details and buttons
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        //Header row here
+        int row = 1;
+        for (Nation n : engine.getOtherNations()) {
+            Label name = new Label(n.getName());
+            Label sellP = new Label(n.sellPrice(s) + " gold");
+            Label buyP = new Label(n.buyPrice(s) + " gold");
+            Button sellBtn = new Button("Sell");
+            Button buyBtn = new Button("Buy");
+
+            buyBtn.setDisable(!n.hasAgreement(AgreementType.TRADE));
+            sellBtn.setDisable(!n.hasAgreement(AgreementType.TRADE));
+
+            buyBtn.setOnAction(e -> {
+                int qty = parseInt(qtyInput);
+                if (qty < 0) {
+                    System.out.println("Invalid input!");
+                    return;
+                }
+                if (engine.buyResource(n,s,qty)) {
+                    System.out.println("Successfully bought " + qty + " " + s.toString());
+                } else {
+                    System.out.println("Unable to purchase " + qty + " " + s.toString());
+                }
+            });
+            sellBtn.setOnAction(e -> {
+                int qty = parseInt(qtyInput);
+                if (qty < 0) {
+                    System.out.println("Invalid input!");
+                    return;
+                }
+                if (engine.sellResource(n,s,qty)) {
+                    System.out.println("Successfully sold " + qty + " " + s.toString());
+                } else {
+                    System.out.println("Unable to sell " + qty + " " + s.toString());
+                }
+            });
+
+            grid.add(name, 0, row);
+            grid.add(sellP, 1, row);
+            grid.add(buyP, 2, row);
+            grid.add(sellBtn, 3, row);
+            grid.add(buyBtn, 4, row);
+
+            row++;
+        }
+        side.getChildren().addAll(qtyInput, grid);
+        return side;
+    }
+
+    private int parseInt(TextField field) {
+        try {
+            String str = field.getText();
+            int value = Integer.parseInt(str.trim());
+            if (value < 0) {
+                value = -1;
+            }
+            return value;
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     @Override

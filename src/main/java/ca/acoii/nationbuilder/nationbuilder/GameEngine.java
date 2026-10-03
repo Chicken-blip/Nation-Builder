@@ -19,6 +19,7 @@ public class GameEngine {
         return otherNations;
     }
     public void nextTurn() {
+        adjustStat(Stat.GOLD,-10);
         applyBuildingOutput();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {

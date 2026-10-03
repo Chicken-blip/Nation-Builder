@@ -10,7 +10,7 @@ public class Nation {
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
     private Map<Stat, Integer> sellPrices, buyPrices;
-    private Set<AgreementType> agreements = new HashSet<>();
+    private List<AgreementType> agreements = new ArrayList<>();
 
     //Constructors
     public Nation() {
@@ -67,9 +67,12 @@ public class Nation {
     public void removeAgreement(AgreementType a) {
         agreements.remove(a);
     }
+    public List<AgreementType> getAgreements() {
+        return agreements;
+    }
 
-    public int buyPrice(Stat s) {return buyPrices.get(s);}
-    public int sellPrice(Stat s) {return sellPrices.get(s);}
+    public int buyPrice(Stat s) {return buyPrices.getOrDefault(s, 0);}
+    public int sellPrice(Stat s) {return sellPrices.getOrDefault(s, 0);}
 
     //Listener Methods
     public void addListener(NationListener listener) {
