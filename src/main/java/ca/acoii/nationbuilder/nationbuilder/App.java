@@ -26,6 +26,7 @@ public class App extends Application implements NationListener, GameEngineListen
     //Diplomacy Info
     private Label diplomacyHeader, diplomacyDetail, diplomacyAgreements;
     private List<Button> diplomacyBtns = new ArrayList<>();
+    private List<Label> popLabels = new ArrayList<>();
     private Nation selectedNation;
 
     @Override
@@ -78,7 +79,13 @@ public class App extends Application implements NationListener, GameEngineListen
         });
         btn5.setPrefWidth(btnWidth);
         btn5.setPrefHeight(btnHeight);
-        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5);
+        Button btn6 = new Button("Population");
+        btn6.setOnAction(e -> {
+            showSubMenu("Population", populationMenu());
+        });
+        btn6.setPrefWidth(btnWidth);
+        btn6.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6);
         menuPane.setPrefColumns(4);
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
@@ -157,6 +164,7 @@ public class App extends Application implements NationListener, GameEngineListen
         HBox btnBox = new HBox(btn);
         btnBox.setAlignment(Pos.CENTER);
         subMenu.getChildren().add(btnBox);
+        subMenu.setFillWidth(true);
         ScrollPane scrl = new ScrollPane(subMenu);
         scrl.setFitToWidth(true);
         root.setCenter(scrl);
@@ -404,6 +412,69 @@ public class App extends Application implements NationListener, GameEngineListen
         }
         side.getChildren().addAll(qtyInput, grid);
         return side;
+    }
+
+    private VBox populationMenu() {
+        popLabels = new ArrayList<>();
+        VBox main = new VBox(10);
+        main.setPadding(new Insets(20));
+
+        //Tax Pane
+        Slider taxSlider = new Slider(0, 0.80, engine.getTaxRate());
+        taxSlider.setShowTickMarks(true);
+        taxSlider.setShowTickLabels(true);
+        taxSlider.setMajorTickUnit(0.2);
+        taxSlider.setBlockIncrement(0.01);
+        taxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            engine.setTaxRate(newVal.doubleValue());
+            resetPopLabels();
+        });
+
+        //Labels below
+        Label taxLabel1 = new Label("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
+        Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5)) + "/turn");
+        Label taxLabel3 = new Label("");
+        Label taxLabel4 = new Label("");
+        if (engine.isStarving()) {
+            taxLabel3 = new Label("Unrest Threshold: 25%");
+            if (engine.getTaxRate() > 0.25) {
+                taxLabel4 = new Label("Stability penalty: -1/turn");
+            } else {
+                taxLabel4 = new Label("No stability penalty");
+            }
+        } else {
+            taxLabel3 = new Label("Unrest Threshold: 40%");
+            if (engine.getTaxRate() > 0.4) {
+                taxLabel4 = new Label("Stability penalty: -1/turn");
+            } else {
+                taxLabel4 = new Label("No stability penalty");
+            }
+        }
+        popLabels.addAll(List.of(new Label[]{taxLabel1, taxLabel2, taxLabel3, taxLabel4}));
+
+        main.getChildren().add(taxSlider);
+        main.getChildren().addAll(taxLabel1, taxLabel2, taxLabel3, taxLabel4);
+        return main;
+    }
+
+    private void resetPopLabels() {
+        popLabels.get(0).setText("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
+        popLabels.get(1).setText("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5)) + "/turn");
+        if (engine.isStarving()) {
+            popLabels.get(2).setText("Unrest Threshold: 25%");
+            if (engine.getTaxRate() > 0.25) {
+                popLabels.get(3).setText("Stability penalty: -1/turn");
+            } else {
+                popLabels.get(3).setText("No stability penalty");
+            }
+        } else {
+            popLabels.get(2).setText("Unrest Threshold: 40%");
+            if (engine.getTaxRate() > 0.4) {
+                popLabels.get(3).setText("Stability penalty: -1/turn");
+            } else {
+                popLabels.get(3).setText("No stability penalty");
+            }
+        }
     }
 
     private int parseInt(TextField field) {

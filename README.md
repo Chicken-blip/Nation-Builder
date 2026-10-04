@@ -5,10 +5,14 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - Simple UI of Main Scene
 - Rendering of changes in Nation stats
 - Functioning NEXT TURN button
+- JSON-Driven Event system
+- JSON-based schema for Buildings and Nations
+- Different menus for managing population, diplomacy, buildings, and other things
 
 # Roadmap
-- JSON-driven Event System
-- Multiple Nations + relation
+- Military management
+- Research
+- Population programs (education, healthcare, etc.)
 - Political narrative
 - And more...
 

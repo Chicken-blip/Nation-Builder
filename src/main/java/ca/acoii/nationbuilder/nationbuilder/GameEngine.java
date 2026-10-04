@@ -243,7 +243,7 @@ public class GameEngine {
         //Population changes!
         if (shortages == 0) {
             //No shortages - population grows
-            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) + (pop / 100));
+            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) + (pop / 50));
         } else {
             //Shortages exist - population declines
             playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) - (pop / 20));
@@ -259,7 +259,7 @@ public class GameEngine {
 
     public void applyTaxes() {
         int pop = playerNation.getValue(Stat.POPULATION);
-        int revenue = (int) (pop * taxRate * 0.5);
+        int revenue = (int) (pop * taxRate * 0.2);
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
 
         double threshold = 0.4;
