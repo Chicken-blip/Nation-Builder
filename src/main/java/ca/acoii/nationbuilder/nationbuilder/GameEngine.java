@@ -12,20 +12,24 @@ public class GameEngine {
     private List<Nation> otherNations = new ArrayList<>();
     private Map<String, Integer> builtBuildings = new HashMap<>();
     private Map<Stat, Double> consumables = new HashMap<>();
+    private double taxRate;
+    private boolean starving;
     public GameEngine(Nation nation) {
         playerNation = nation;
         consumables.put(Stat.FOOD, 0.01);
         consumables.put(Stat.CLOTH, 0.002);
         builtBuildings.put("Power Plant", 1);
+        taxRate = 0.2;
+        starving = false;
         turn = 1;
     }
     public List<Nation> getOtherNations() {
         return otherNations;
     }
     public void nextTurn() {
-        adjustStat(Stat.GOLD,-10);
         applyBuildingOutput();
         populationEffects();
+        applyTaxes();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {
                 n.removeAgreement(AgreementType.TRADE);
@@ -245,9 +249,24 @@ public class GameEngine {
             playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) - (pop / 20));
         }
 
+        starving = shortages > 1;
+
         //Stability changes for extreme starvation
-        if (shortages > 1) {
+        if (starving) {
             playerNation.setValue(Stat.STABILITY, playerNation.getValue(Stat.STABILITY) - 5);
+        }
+    }
+
+    public void applyTaxes() {
+        int pop = playerNation.getValue(Stat.POPULATION);
+        int revenue = (int) (pop * taxRate * 0.5);
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
+
+        double threshold = 0.4;
+        if (starving) threshold = 0.25;
+
+        if (taxRate > threshold) {
+            playerNation.setValue(Stat.STABILITY, playerNation.getValue(Stat.STABILITY) - 1);
         }
     }
 
@@ -268,5 +287,15 @@ public class GameEngine {
         return sum;
     }
 
+    public double getTaxRate() {
+        return taxRate;
+    }
 
+    public boolean isStarving() {
+        return starving;
+    }
+
+    public void setTaxRate(double taxRate) {
+        this.taxRate = taxRate;
+    }
 }

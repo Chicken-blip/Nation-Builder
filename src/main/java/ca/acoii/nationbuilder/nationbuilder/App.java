@@ -47,7 +47,7 @@ public class App extends Application implements NationListener, GameEngineListen
         turnLabel = new Label();
         HBox resourcePane = new HBox(10, goldLabel, stabLabel, popLabel, powerLabel, turnLabel);
         resourcePane.setAlignment(Pos.CENTER);
-        resourcePane.setPadding(new Insets(10,50,10,50));
+        resourcePane.setPadding(new Insets(10,20,10,20));
         //Menu Items
         int btnWidth = 100;
         int btnHeight = 30;
