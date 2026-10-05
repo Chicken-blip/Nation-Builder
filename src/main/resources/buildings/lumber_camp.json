@@ -7,5 +7,6 @@
     {"stat": "WOOD", "delta": 10}
   ],
   "powerRequired": 2,
-  "powerOutput": 0
+  "powerOutput": 0,
+  "upkeep": 0
 }

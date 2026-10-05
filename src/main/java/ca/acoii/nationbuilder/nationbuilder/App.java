@@ -107,7 +107,7 @@ public class App extends Application implements NationListener, GameEngineListen
         root.setBottom(bottomPane);
 
         rootStack = new StackPane(root);
-        stage.setScene(new Scene(rootStack, 600, 400));
+        stage.setScene(new Scene(rootStack, 650, 400));
         onNationChanged(yourNation);
         onTurnAdvanced(engine);
         stage.show();
@@ -195,16 +195,18 @@ public class App extends Application implements NationListener, GameEngineListen
         grid.add(new Label("Name"), 0, 0);
         grid.add(new Label("Building cost"), 1, 0);
         grid.add(new Label("Output per turn"), 2, 0);
-        grid.add(new Label("# of Buildings"), 3, 0);
+        grid.add(new Label("Upkeep"), 3, 0);
+        grid.add(new Label("# of Buildings"), 4, 0);
 
         int row = 1;
         for (Building b : engine.getBuildings()) {
             Label name = new Label(b.getName());
             TitledPane cost = new TitledPane();
-            cost.setText("Expand to see cost");
+            cost.setText("Expand");
             cost.setContent(new VBox(10, new Label(formatEffects(b.getCost(), 1))));
             cost.setExpanded(false);
             Label output = new Label(formatEffects(b.getOutput(), 0));
+            Label upkeep = new Label(b.getUpkeep() + " gold/turn");
             Label count = new Label("Owned: " + engine.getBuildingCount(b));
             Button buildBtn = new Button("Build");
             buildBtn.setOnAction(e -> {
@@ -214,8 +216,9 @@ public class App extends Application implements NationListener, GameEngineListen
             grid.add(name, 0, row);
             grid.add(cost, 1, row);
             grid.add(output, 2, row);
-            grid.add(count, 3, row);
-            grid.add(buildBtn, 4, row);
+            grid.add(upkeep, 3, row);
+            grid.add(count, 4, row);
+            grid.add(buildBtn, 5, row);
 
             row++;
         }

@@ -8,6 +8,7 @@ public class Building {
     private List<EventEffect> cost;
     private List<EventEffect> output;
     private int powerRequired = 0, powerOutput = 0;
+    private int upkeep;
 
     public Building() {
         cost = new ArrayList<>();
@@ -55,6 +56,11 @@ public class Building {
         this.powerOutput = powerOutput;
     }
 
+    public void setUpkeep(int upkeep) {
+        this.upkeep = upkeep;
+    }
 
-
+    public int getUpkeep() {
+        return upkeep;
+    }
 }

@@ -7,5 +7,6 @@
     {"stat": "STONE", "delta": 8}
   ],
   "powerRequired": 3,
-  "powerOutput": 0
+  "powerOutput": 0,
+  "upkeep": 0
 }

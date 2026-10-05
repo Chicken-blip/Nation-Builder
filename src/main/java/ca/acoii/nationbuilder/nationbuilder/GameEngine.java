@@ -1,6 +1,5 @@
 package ca.acoii.nationbuilder.nationbuilder;
 
-import java.io.IOException;
 import java.util.*;
 
 public class GameEngine {
@@ -10,8 +9,8 @@ public class GameEngine {
     private List<GameEvent> events;
     private List<Building> buildings;
     private List<Nation> otherNations = new ArrayList<>();
-    private Map<String, Integer> builtBuildings = new HashMap<>();
-    private Map<Stat, Double> consumables = new HashMap<>();
+    private final Map<String, Integer> builtBuildings = new HashMap<>();
+    private final Map<Stat, Double> consumables = new HashMap<>();
     private double taxRate;
     private boolean starving;
     public GameEngine(Nation nation) {
@@ -27,6 +26,7 @@ public class GameEngine {
         return otherNations;
     }
     public void nextTurn() {
+        applyBuildingUpkeep();
         applyBuildingOutput();
         populationEffects();
         applyTaxes();
@@ -39,10 +39,19 @@ public class GameEngine {
         notifyListeners();
     }
 
+    private void applyBuildingUpkeep() {
+        for (String str : builtBuildings.keySet()) {
+            Building b = getBuilding(str);
+            assert b != null;
+            adjustStat(Stat.GOLD, -b.getUpkeep());
+        }
+    }
+
     private void applyBuildingOutput() {
         int capacity = getPowerSupply() - getPowerDemand();
         for (String s : builtBuildings.keySet()) {
             Building b = getBuilding(s);
+            assert b != null;
             if (b.getPowerRequired() > 0 && capacity < 0) continue;
             int count = builtBuildings.get(s);
             for (EventEffect e : b.getOutput()) {
@@ -54,7 +63,7 @@ public class GameEngine {
     }
 
     private void adjustStat(Stat stat, int change) {
-        playerNation.setValue(stat,playerNation.getValue(Stat.GOLD) + change);
+        playerNation.setValue(stat, playerNation.getValue(stat) + change);
     }
 
     public int getTurn() {
@@ -63,9 +72,7 @@ public class GameEngine {
     public void addListener(GameEngineListener listener) {
         listeners.add(listener);
     }
-    public void removeListener(GameEngineListener listener) {
-        listeners.remove(listener);
-    }
+
     private void notifyListeners() {
         for (GameEngineListener x : listeners) {
             x.onTurnAdvanced(this);
@@ -80,9 +87,6 @@ public class GameEngine {
         }
     }
 
-    public List<GameEvent> getEventList() {
-        return this.events;
-    }
 
     public void loadBuildings() {
         buildings = new BuildingLoader().loadAll();
@@ -159,13 +163,13 @@ public class GameEngine {
         return null;
     }
 
-    public boolean build(String building) {
+    public void build(String building) {
         Building b = getBuilding(building);
         if (b != null) {
                 //Checks each cost
                 for (EventEffect e : b.getCost()) {
                     if (!evaluateCost(e)) {
-                        return false;
+                        return;
                     }
                 }
                 //Deducts the cost
@@ -175,10 +179,9 @@ public class GameEngine {
                 //Increments this building's count
                 builtBuildings.put(b.getName(), builtBuildings.getOrDefault(b.getName(), 0) + 1);
                 notifyListeners();
-                return true;
+                return;
         }
         notifyListeners();
-        return false;
     }
 
     public void establishTradeAgreement(Nation n) {
@@ -189,8 +192,8 @@ public class GameEngine {
         if (!seller.hasAgreement(AgreementType.TRADE)) return false;
         int cost = seller.buyPrice(resource) * qty;
         if (playerNation.getValue(Stat.GOLD) < cost) return false;
-        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) - cost);
-        playerNation.setValue(resource, playerNation.getValue(resource) + qty);
+        adjustStat(Stat.GOLD, -cost);
+        adjustStat(resource, qty);
         return true;
     }
 
@@ -198,13 +201,13 @@ public class GameEngine {
         if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
         int revenue = buyer.sellPrice(resource) * qty;
         if (playerNation.getValue(resource) < qty) return false;
-        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
-        playerNation.setValue(resource, playerNation.getValue(resource) - qty);
+        adjustStat(Stat.GOLD, revenue);
+        adjustStat(resource, -qty);
         return true;
     }
 
     private void applyEffect(EventEffect e) {
-        playerNation.setValue(e.getStat(), playerNation.getValue(e.getStat()) + e.getDelta());
+        adjustStat(e.getStat(), e.getDelta());
     }
 
     private Building getBuilding(String n) {
@@ -243,30 +246,30 @@ public class GameEngine {
         //Population changes!
         if (shortages == 0) {
             //No shortages - population grows
-            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) + (pop / 50));
+            adjustStat(Stat.POPULATION, pop / 50);
         } else {
             //Shortages exist - population declines
-            playerNation.setValue(Stat.POPULATION,playerNation.getValue(Stat.POPULATION) - (pop / 20));
+            adjustStat(Stat.POPULATION, -(pop / 20));
         }
 
         starving = shortages > 1;
 
         //Stability changes for extreme starvation
         if (starving) {
-            playerNation.setValue(Stat.STABILITY, playerNation.getValue(Stat.STABILITY) - 5);
+            adjustStat(Stat.STABILITY, -5);
         }
     }
 
     public void applyTaxes() {
         int pop = playerNation.getValue(Stat.POPULATION);
         int revenue = (int) (pop * taxRate * 0.2);
-        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
+        adjustStat(Stat.GOLD, revenue);
 
         double threshold = 0.4;
         if (starving) threshold = 0.25;
 
         if (taxRate > threshold) {
-            playerNation.setValue(Stat.STABILITY, playerNation.getValue(Stat.STABILITY) - 1);
+            adjustStat(Stat.STABILITY, -1);
         }
     }
 
@@ -274,6 +277,7 @@ public class GameEngine {
         int sum = 0;
         if (builtBuildings.isEmpty()) return 0;
         for (String b: builtBuildings.keySet()) {
+            assert getBuilding(b) != null;
             sum += (getBuilding(b).getPowerOutput()) * builtBuildings.get(b);
         }
         return sum;
@@ -282,6 +286,7 @@ public class GameEngine {
         int sum = 0;
         if (builtBuildings.isEmpty()) return 0;
         for (String b: builtBuildings.keySet()) {
+            assert getBuilding(b) != null;
             sum += (getBuilding(b).getPowerRequired()) * builtBuildings.get(b);
         }
         return sum;

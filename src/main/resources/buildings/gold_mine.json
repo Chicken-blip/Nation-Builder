@@ -8,5 +8,6 @@
     {"stat": "GOLD", "delta": 3}
   ],
   "powerRequired": 5,
-  "powerOutput": 0
+  "powerOutput": 0,
+  "upkeep": 0
 }

@@ -9,5 +9,6 @@
 
   ],
   "powerRequired": 0,
-  "powerOutput": 30
+  "powerOutput": 30,
+  "upkeep": 15
 }

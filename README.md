@@ -14,6 +14,8 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - Research
 - Population programs (education, healthcare, etc.)
 - Political narrative
+- Policies
+- Save/Load support
 - And more...
 
 # How To Run
