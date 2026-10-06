@@ -8,8 +8,10 @@ public class GameEngine {
     private final List<GameEngineListener> listeners = new ArrayList<>();
     private List<GameEvent> events;
     private List<Building> buildings;
+    private List<Infrastructure> infrastructures;
     private List<Nation> otherNations = new ArrayList<>();
     private final Map<String, Integer> builtBuildings = new HashMap<>();
+    private final Map<String, Integer> builtInfrastructure = new HashMap<>();
     private final Map<Stat, Double> consumables = new HashMap<>();
     private double taxRate;
     private boolean starving;
@@ -18,6 +20,9 @@ public class GameEngine {
         consumables.put(Stat.FOOD, 0.01);
         consumables.put(Stat.CLOTH, 0.002);
         builtBuildings.put("Power Plant", 1);
+        builtInfrastructure.put("Elementary School", 1);
+        builtInfrastructure.put("Clinic", 1);
+        builtInfrastructure.put("Park", 1);
         taxRate = 0.2;
         starving = false;
         turn = 1;
@@ -30,6 +35,7 @@ public class GameEngine {
         applyBuildingOutput();
         populationEffects();
         applyTaxes();
+        applyInfraEffects();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {
                 n.removeAgreement(AgreementType.TRADE);
@@ -43,7 +49,12 @@ public class GameEngine {
         for (String str : builtBuildings.keySet()) {
             Building b = getBuilding(str);
             assert b != null;
-            adjustStat(Stat.GOLD, -b.getUpkeep());
+            playerNation.setGold((-b.getUpkeep() * getBuildingCount(b)) + playerNation.getGold());
+        }
+        for (String str : builtInfrastructure.keySet()) {
+            Infrastructure i = getInfrastructure(str);
+            assert i != null;
+            playerNation.setGold((-i.getUpkeep() * getInfrastructureCount(i)) + playerNation.getGold());
         }
     }
 
@@ -60,10 +71,23 @@ public class GameEngine {
                 }
             }
         }
+
+    }
+
+    private void applyInfraEffects() {
+        for (InfraCategory e : InfraCategory.values()) {
+            if (getInfraHappiness(e) < getHappinessRequired(e)) {
+                adjustStat(Stat.STABILITY,-1);
+            }
+        }
     }
 
     private void adjustStat(Stat stat, int change) {
         playerNation.setValue(stat, playerNation.getValue(stat) + change);
+    }
+
+    private void adjustStat(Stat stat, double change) {
+        playerNation.setGold( playerNation.getGold() + change);
     }
 
     public int getTurn() {
@@ -99,6 +123,13 @@ public class GameEngine {
         otherNations = new NationLoader().loadAll();
         for (Nation n : otherNations) {
             System.out.println("Nation: " + n.getName());
+        }
+    }
+
+    public void loadInfrastructure() {
+        infrastructures = new InfrastructureLoader().loadAll();
+        for (Infrastructure i : infrastructures) {
+            System.out.println("Infrastructure: " + i.getName());
         }
     }
 
@@ -163,26 +194,58 @@ public class GameEngine {
         return null;
     }
 
-    public void build(String building) {
-        Building b = getBuilding(building);
-        if (b != null) {
-                //Checks each cost
-                for (EventEffect e : b.getCost()) {
-                    if (!evaluateCost(e)) {
-                        return;
+    public boolean build(String name, int type) {
+        switch (type) {
+            case 1 -> {
+                //Given a building name
+                Building b = getBuilding(name);
+                if (b != null) {
+                    //Checks each cost
+                    for (EventEffect e : b.getCost()) {
+                        if (!evaluateCost(e)) {
+                            return false;
+                        }
                     }
+                    //Deducts the cost
+                    for (EventEffect e : b.getCost()) {
+                        applyEffect(e);
+                    }
+                    //Increments this building's count
+                    builtBuildings.put(b.getName(), builtBuildings.getOrDefault(b.getName(), 0) + 1);
+                    notifyListeners();
+                    return true;
                 }
-                //Deducts the cost
-                for (EventEffect e : b.getCost()) {
-                    applyEffect(e);
-                }
-                //Increments this building's count
-                builtBuildings.put(b.getName(), builtBuildings.getOrDefault(b.getName(), 0) + 1);
                 notifyListeners();
-                return;
+                return false;
+            }
+            case 2 -> {
+                //Given an infrastructure name
+                Infrastructure i = getInfrastructure(name);
+                if (i != null) {
+                    //Checks each cost
+                    for (EventEffect e : i.getCost()) {
+                        if (!evaluateCost(e)) {
+                            return false;
+                        }
+                    }
+                    //Deducts the cost
+                    for (EventEffect e : i.getCost()) {
+                        applyEffect(e);
+                    }
+                    //Increments this infrastructure's count
+                    builtInfrastructure.put(i.getName(), builtInfrastructure.getOrDefault(i.getName(), 0) + 1);
+                    notifyListeners();
+                    return true;
+                }
+                notifyListeners();
+                return false;
+            }
         }
-        notifyListeners();
+        return false;
     }
+
+
+
 
     public void establishTradeAgreement(Nation n) {
         n.addAgreement(AgreementType.TRADE);
@@ -190,18 +253,18 @@ public class GameEngine {
 
     public boolean buyResource(Nation seller, Stat resource, int qty) {
         if (!seller.hasAgreement(AgreementType.TRADE)) return false;
-        int cost = seller.buyPrice(resource) * qty;
-        if (playerNation.getValue(Stat.GOLD) < cost) return false;
-        adjustStat(Stat.GOLD, -cost);
+        double cost = seller.buyPrice(resource) * qty;
+        if (playerNation.getGold() < cost) return false;
+        playerNation.setGold(playerNation.getGold() - cost);
         adjustStat(resource, qty);
         return true;
     }
 
     public boolean sellResource(Nation buyer, Stat resource, int qty) {
         if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
-        int revenue = buyer.sellPrice(resource) * qty;
+        double revenue = buyer.sellPrice(resource) * qty;
         if (playerNation.getValue(resource) < qty) return false;
-        adjustStat(Stat.GOLD, revenue);
+        playerNation.setGold(playerNation.getGold() + revenue);
         adjustStat(resource, -qty);
         return true;
     }
@@ -219,12 +282,28 @@ public class GameEngine {
         return null;
     }
 
+    private Infrastructure getInfrastructure(String n) {
+        for (Infrastructure i : infrastructures) {
+            if (Objects.equals(i.getName(), n)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     public List<Building> getBuildings() {
         return buildings;
     }
 
+    public List<Infrastructure> getInfrastructure() {
+        return infrastructures;
+    }
+
     public int getBuildingCount(Building b) {
         return builtBuildings.getOrDefault(b.getName(), 0);
+    }
+    public int getInfrastructureCount(Infrastructure i) {
+        return builtInfrastructure.getOrDefault(i.getName(), 0);
     }
 
     public void populationEffects() {
@@ -263,7 +342,7 @@ public class GameEngine {
     public void applyTaxes() {
         int pop = playerNation.getValue(Stat.POPULATION);
         int revenue = (int) (pop * taxRate * 0.2);
-        adjustStat(Stat.GOLD, revenue);
+        playerNation.setGold(playerNation.getGold() + revenue);
 
         double threshold = 0.4;
         if (starving) threshold = 0.25;
@@ -289,7 +368,27 @@ public class GameEngine {
             assert getBuilding(b) != null;
             sum += (getBuilding(b).getPowerRequired()) * builtBuildings.get(b);
         }
+        for (String i : builtInfrastructure.keySet()) {
+            assert getInfrastructure(i) != null;
+            sum += (getInfrastructure(i).getPowerRequired()) * builtInfrastructure.get(i);
+        }
         return sum;
+    }
+
+    public int getInfraHappiness(InfraCategory e) {
+        int sum = 0;
+        for (String n : builtInfrastructure.keySet()) {
+            Infrastructure i = getInfrastructure(n);
+            assert i != null;
+            if (i.getCategory() == e) {
+                sum += i.getHappiness() * builtInfrastructure.get(i.getName());
+            }
+        }
+        return sum;
+    }
+
+    public int getHappinessRequired(InfraCategory e) {
+        return (int) (playerNation.getValue(Stat.POPULATION) * 0.0015);
     }
 
     public double getTaxRate() {

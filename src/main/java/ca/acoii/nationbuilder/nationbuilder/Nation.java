@@ -7,21 +7,22 @@ import java.util.*;
 
 public class Nation {
     private Map<Stat, Integer> stats = new HashMap<>();
+    private double gold;
     private String name;
     final private List<NationListener> listeners = new ArrayList<>();
-    private Map<Stat, Integer> sellPrices, buyPrices;
+    private Map<Stat, Double> sellPrices, buyPrices;
     private List<AgreementType> agreements = new ArrayList<>();
 
     //Constructors
     public Nation() {
-        this("Fantasia", 500, 20, 0);
+        this("Fantasia", 500, 100, 0);
     }
     public Nation(String name, int gold, int stability) {
         this(name, gold, stability, 0);
     }
     public Nation(String name, int gold, int stability, int relation) {
         this.name = name;
-        stats.put(Stat.GOLD, gold);
+        this.gold = gold;
         stats.put(Stat.STABILITY, stability);
         stats.put(Stat.RELATIONS, relation);
         stats.put(Stat.WOOD, 100);
@@ -34,11 +35,11 @@ public class Nation {
     }
     //Jackson Constructor
     @JsonCreator
-    public Nation(@JsonProperty("name") String name, @JsonProperty("gold") int gold, @JsonProperty("stability") int stability, @JsonProperty("relations") int relations, @JsonProperty("buyPrices") Map<Stat, Integer> buyPrices, @JsonProperty("sellPrices") Map<Stat, Integer> sellPrices) {
+    public Nation(@JsonProperty("name") String name, @JsonProperty("gold") double gold, @JsonProperty("stability") int stability, @JsonProperty("relations") int relations, @JsonProperty("buyPrices") Map<Stat, Double> buyPrices, @JsonProperty("sellPrices") Map<Stat, Double> sellPrices) {
         this.name = name;
         this.buyPrices = buyPrices;
         this.sellPrices = sellPrices;
-        setValue(Stat.GOLD, gold);
+        setGold(gold);
         setValue(Stat.STABILITY, stability);
         setValue(Stat.RELATIONS, relations);
     }
@@ -46,6 +47,9 @@ public class Nation {
     //General Getter - use for all getting (except for name)
     public int getValue(Stat stat) {
         return stats.getOrDefault(stat, 0);
+    }
+    public double getGold() {
+        return gold;
     }
     //Exception - Name getter
     public String getName() {
@@ -58,6 +62,12 @@ public class Nation {
             stats.put(stat, newValue);
             notifyListeners();
         }
+    }
+
+    public void setGold(double newValue) {
+        //Only applies for gold
+        this.gold = newValue;
+        notifyListeners();
     }
 
     public boolean hasAgreement(AgreementType a) {
@@ -73,8 +83,8 @@ public class Nation {
         return agreements;
     }
 
-    public int buyPrice(Stat s) {return buyPrices.getOrDefault(s, 0);}
-    public int sellPrice(Stat s) {return sellPrices.getOrDefault(s, 0);}
+    public Double buyPrice(Stat s) {return buyPrices.getOrDefault(s, 0.0);}
+    public Double sellPrice(Stat s) {return sellPrices.getOrDefault(s, 0.0);}
 
     //Listener Methods
     public void addListener(NationListener listener) {

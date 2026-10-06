@@ -1,0 +1,10 @@
+{
+  "name": "Park",
+  "category": "RECREATION",
+  "cost": [
+    {"stat": "WOOD", "delta": -20}
+  ],
+  "happiness": 1,
+  "powerRequired": 0,
+  "upkeep": 5
+}

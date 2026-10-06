@@ -1,0 +1,13 @@
+{
+  "name": "University",
+  "category": "EDUCATION",
+  "cost": [
+    {"stat": "WOOD", "delta": -90},
+    {"stat": "STONE", "delta": -60},
+    {"stat": "IRON", "delta": -30},
+    {"stat": "GOLD", "delta": -20}
+  ],
+  "happiness": 4,
+  "powerRequired": 5,
+  "upkeep": 40
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Hospital",
+  "category": "HEALTH",
+  "cost": [
+    {"stat": "WOOD", "delta": -80},
+    {"stat": "STONE", "delta": -70},
+    {"stat": "IRON", "delta": -25}
+  ],
+  "happiness": 3,
+  "powerRequired": 6,
+  "upkeep": 20
+}

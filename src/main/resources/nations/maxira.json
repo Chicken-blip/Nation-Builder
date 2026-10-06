@@ -4,19 +4,19 @@
   "stability": 50,
   "relations": 0,
   "buyPrices": {
-    "WOOD": 8,
-    "STONE": 14,
-    "IRON": 18,
-    "COAL": 16,
-    "FOOD": 19,
-    "CLOTH": 12
+    "WOOD": 12,
+    "STONE": 21,
+    "IRON": 27,
+    "COAL": 24,
+    "FOOD": 28,
+    "CLOTH": 18
   },
   "sellPrices": {
-    "WOOD": 5,
-    "STONE": 7,
-    "IRON": 9,
-    "COAL": 5,
-    "FOOD": 7,
-    "CLOTH": 8
+    "WOOD": 0.15,
+    "STONE": 0.2,
+    "IRON": 0.3,
+    "COAL": 0.25,
+    "FOOD": 0.3,
+    "CLOTH": 0.2
   }
 }

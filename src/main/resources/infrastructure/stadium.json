@@ -1,0 +1,12 @@
+{
+  "name": "Stadium",
+  "category": "RECREATION",
+  "cost": [
+    {"stat": "WOOD", "delta": -100},
+    {"stat": "STONE", "delta": -80},
+    {"stat": "IRON", "delta": -40}
+  ],
+  "happiness": 10,
+  "powerRequired": 10,
+  "upkeep": 50
+}

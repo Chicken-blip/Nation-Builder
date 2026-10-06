@@ -1,0 +1,13 @@
+{
+  "name": "Weaver",
+  "cost": [
+    {"stat": "WOOD", "delta": -50},
+    {"stat": "STONE", "delta": -30}
+  ],
+  "output": [
+    {"stat": "CLOTH", "delta": 5}
+  ],
+  "powerRequired": 3,
+  "powerOutput": 0,
+  "upkeep": 0
+}

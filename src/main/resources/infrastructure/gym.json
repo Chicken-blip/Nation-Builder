@@ -1,0 +1,11 @@
+{
+  "name": "Gym",
+  "category": "RECREATION",
+  "cost": [
+    {"stat": "WOOD", "delta": -30},
+    {"stat": "STONE", "delta": -15}
+  ],
+  "happiness": 3,
+  "powerRequired": 1,
+  "upkeep": 10
+}

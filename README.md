@@ -23,6 +23,8 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 ```console
 mvn javafx:run
 ```
+# Notes
+SimRunner.java is a harness I made to test inflation concerning resources and population - it shouldn't be run when playing the game normally.
 
 # Credits
 Inspired by Suzerian and Oxiwyle Inc.'s mobile games

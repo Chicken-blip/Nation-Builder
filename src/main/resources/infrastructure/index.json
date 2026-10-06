@@ -1,0 +1,12 @@
+[
+  "elementary_school.json",
+  "high_school.json",
+  "university.json",
+
+  "park.json",
+  "gym.json",
+  "stadium.json",
+
+  "clinic.json",
+  "hospital.json"
+]

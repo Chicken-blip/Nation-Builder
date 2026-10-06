@@ -1,0 +1,11 @@
+{
+  "name": "Elementary School",
+  "category": "EDUCATION",
+  "cost": [
+    {"stat": "WOOD", "delta": -40},
+    {"stat": "STONE", "delta": -30}
+  ],
+  "happiness": 1,
+  "powerRequired": 2,
+  "upkeep": 10
+}

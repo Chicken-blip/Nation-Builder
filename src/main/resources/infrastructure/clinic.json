@@ -1,0 +1,11 @@
+{
+  "name": "Clinic",
+  "category": "HEALTH",
+  "cost": [
+    {"stat": "WOOD", "delta": -40},
+    {"stat": "STONE", "delta": -40}
+  ],
+  "happiness": 1,
+  "powerRequired": 3,
+  "upkeep": 15
+}

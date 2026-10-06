@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
@@ -27,6 +26,7 @@ public class App extends Application implements NationListener, GameEngineListen
     private Label diplomacyHeader, diplomacyDetail, diplomacyAgreements;
     private List<Button> diplomacyBtns = new ArrayList<>();
     private List<Label> popLabels = new ArrayList<>();
+    private List<Label> infraLabels = new ArrayList<>();
     private Nation selectedNation;
 
     @Override
@@ -39,6 +39,7 @@ public class App extends Application implements NationListener, GameEngineListen
         engine.loadNations();
         engine.loadEvents();
         engine.loadBuildings();
+        engine.loadInfrastructure();
 
         //Resource items
         goldLabel = new Label();
@@ -50,7 +51,7 @@ public class App extends Application implements NationListener, GameEngineListen
         resourcePane.setAlignment(Pos.CENTER);
         resourcePane.setPadding(new Insets(10,20,10,20));
         //Menu Items
-        int btnWidth = 100;
+        int btnWidth = 125;
         int btnHeight = 30;
         Button btn1 = new Button("Construction");
         btn1.setOnAction(e -> {
@@ -71,6 +72,7 @@ public class App extends Application implements NationListener, GameEngineListen
         btn3.setPrefWidth(btnWidth);
         btn3.setPrefHeight(btnHeight);
         Button btn4 = new Button("War");
+        btn4.setDisable(true);
         btn4.setPrefWidth(btnWidth);
         btn4.setPrefHeight(btnHeight);
         Button btn5 = new Button("Inventory");
@@ -85,8 +87,15 @@ public class App extends Application implements NationListener, GameEngineListen
         });
         btn6.setPrefWidth(btnWidth);
         btn6.setPrefHeight(btnHeight);
-        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6);
-        menuPane.setPrefColumns(4);
+        Button btn7 = new Button("Infrastructure");
+        btn7.setOnAction(e -> {
+            showSubMenu("Infrastructure", infrastructureMenu());
+        });
+        btn7.setPrefWidth(btnWidth);
+        btn7.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7);
+        menuPane.setPrefColumns(3);
+        menuPane.setMaxWidth(500);
         menuPane.setAlignment(Pos.CENTER);
         //Bottom Button
         turnBtn = new Button("NEXT TURN");
@@ -107,7 +116,8 @@ public class App extends Application implements NationListener, GameEngineListen
         root.setBottom(bottomPane);
 
         rootStack = new StackPane(root);
-        stage.setScene(new Scene(rootStack, 650, 400));
+        stage.setScene(new Scene(rootStack, 800, 550));
+        stage.setResizable(false);
         onNationChanged(yourNation);
         onTurnAdvanced(engine);
         stage.show();
@@ -196,7 +206,7 @@ public class App extends Application implements NationListener, GameEngineListen
         grid.add(new Label("Building cost"), 1, 0);
         grid.add(new Label("Output per turn"), 2, 0);
         grid.add(new Label("Upkeep"), 3, 0);
-        grid.add(new Label("# of Buildings"), 4, 0);
+        grid.add(new Label("Current Count"), 4, 0);
 
         int row = 1;
         for (Building b : engine.getBuildings()) {
@@ -210,7 +220,11 @@ public class App extends Application implements NationListener, GameEngineListen
             Label count = new Label("Owned: " + engine.getBuildingCount(b));
             Button buildBtn = new Button("Build");
             buildBtn.setOnAction(e -> {
-                engine.build(b.getName());
+                if (engine.build(b.getName(), 1)) {
+                    System.out.println("Successfully build " + b.getName());
+                } else {
+                    System.out.println("Failed to build " + b.getName());
+                }
                 showSubMenu("Construction", constructionMenu());
             });
             grid.add(name, 0, row);
@@ -283,11 +297,11 @@ public class App extends Application implements NationListener, GameEngineListen
         nationDetails.getChildren().addAll(diplomacyHeader, diplomacyDetail, diplomacyAgreements);
         Button btnSendGift = new Button("Send Gift (-50 Gold)");
         btnSendGift.setOnAction(e -> {
-            System.out.println("Clicked. Gold=" + yourNation.getValue(Stat.GOLD) +
+            System.out.println("Clicked. Gold=" + yourNation.getGold() +
                     " Relations=" + selectedNation.getValue(Stat.RELATIONS));
-            if (selectedNation == null || yourNation.getValue(Stat.GOLD) < 50) return;
-            yourNation.setValue(Stat.GOLD, yourNation.getValue(Stat.GOLD) - 50);
-            selectedNation.setValue(Stat.GOLD, selectedNation.getValue(Stat.GOLD) + 50);
+            if (selectedNation == null || yourNation.getGold() < 50) return;
+            yourNation.setGold(yourNation.getGold() - 50);
+            selectedNation.setGold(selectedNation.getGold() + 50);
             selectedNation.setValue(Stat.RELATIONS, selectedNation.getValue(Stat.RELATIONS) + 15);
             updateDiplomacyDetail(selectedNation);
         });
@@ -322,7 +336,7 @@ public class App extends Application implements NationListener, GameEngineListen
             }
             diplomacyAgreements.setText(str);
         }
-        diplomacyBtns.getFirst().setDisable(yourNation.getValue(Stat.GOLD) < 50);
+        diplomacyBtns.getFirst().setDisable(yourNation.getGold() < 50);
         diplomacyBtns.get(1).setDisable(selectedNation.hasAgreement(AgreementType.TRADE));
     }
 
@@ -480,6 +494,100 @@ public class App extends Application implements NationListener, GameEngineListen
         }
     }
 
+    private HBox infrastructureMenu() {
+        HBox main = new HBox(10);
+        main.setPadding(new Insets(20));
+
+        //Left side - list of infrastructure categories
+        ListView<InfraCategory> categories = new ListView<>();
+        categories.setPrefHeight(150);
+        for (InfraCategory i : InfraCategory.values()) {
+            categories.getItems().add(i);
+        }
+        categories.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, s) -> {
+                    if (s != null) {
+                        //Update right-side of pane
+                        if (main.getChildren().size() > 1) {
+                            main.getChildren().removeLast();
+                        }
+                        main.getChildren().add(infrastructureSideMenu(s));
+
+                    }
+                });
+        categories.setMaxWidth(150);
+        categories.setMinWidth(150);
+
+        main.getChildren().add(categories);
+
+        return main;
+    }
+
+    private VBox infrastructureSideMenu(InfraCategory s) {
+        VBox side = new VBox(20);
+        side.setPadding(new Insets(20));
+
+        //Heading
+        Label heading = new Label("Infrastructure - " + s.toString());
+
+        //Info label for current status of happiness
+        Label current = new Label("Provided Happiness: " + engine.getInfraHappiness(s) + " | Required Happiness: " + engine.getHappinessRequired(s));
+
+        //Grid for each infrastructure option under the category
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        grid.add(new Label("Name"),0,0);
+        grid.add(new Label("Cost"), 1, 0);
+        grid.add(new Label("Energy Cost"), 2, 0);
+        grid.add(new Label("Happiness"), 3, 0);
+        grid.add(new Label("Upkeep"), 4, 0);
+        grid.add(new Label("Current #"), 5, 0);
+
+        int row = 1;
+
+        //TODO: Add actual infrastructure rows
+        for (Infrastructure i : engine.getInfrastructure()) {
+            if (i.getCategory() == s) {
+                Label name = new Label(i.getName());
+                TitledPane cost = new TitledPane();
+                cost.setText("Expand");
+                cost.setContent(new VBox(10, new Label(formatEffects(i.getCost(), 1))));
+                cost.setExpanded(false);
+                Label energy = new Label(i.getPowerRequired() + "");
+                Label happiness = new Label(i.getHappiness() + "");
+                Label upkeep = new Label(i.getUpkeep() + " gold/turn");
+                Label count = new Label(engine.getInfrastructureCount(i) + "");
+                Button buildBtn = new Button("Build");
+                buildBtn.setOnAction(e -> {
+                    if (engine.build(i.getName(), 2)) {
+                        System.out.println("Successfully build " + i.getName());
+                    } else {
+                        System.out.println("Failed to build " + i.getName());
+                    }
+                    showSubMenu("Infrastructure", infrastructureMenu());
+                });
+
+                grid.add(name, 0, row);
+                grid.add(cost, 1, row);
+                grid.add(energy, 2, row);
+                grid.add(happiness, 3, row);
+                grid.add(upkeep, 4, row);
+                grid.add(count, 5, row);
+                grid.add(buildBtn, 6, row);
+
+                row++;
+
+            }
+        }
+
+        //grid.setMaxWidth(400);
+
+        side.getChildren().addAll(heading, current, grid);
+        return side;
+    }
+
     private int parseInt(TextField field) {
         try {
             String str = field.getText();
@@ -495,7 +603,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
     @Override
     public void onNationChanged(Nation nation) {
-        goldLabel.setText("Gold: " + nation.getValue(Stat.GOLD));
+        goldLabel.setText("Gold: " + String.format("%.2f", nation.getGold()));
         stabLabel.setText("Stability: " + nation.getValue(Stat.STABILITY));
         popLabel.setText("Population: " + nation.getValue(Stat.POPULATION));
         if (engine.getPowerSupply() < engine.getPowerDemand()) {
