@@ -1,0 +1,15 @@
+{
+  "role": "TREASURER",
+  "candidates": [
+    {
+      "name": "Alice Vance",
+      "bonusPercent": 0.1,
+      "upkeep": 40
+    },
+    {
+      "name": "Bob Marsh",
+      "bonusPercent": 0.2,
+      "upkeep": 100
+    }
+  ]
+}

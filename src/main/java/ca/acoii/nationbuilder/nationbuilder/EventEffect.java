@@ -2,7 +2,7 @@ package ca.acoii.nationbuilder.nationbuilder;
 
 public class EventEffect {
     private Stat stat;
-    private int delta;
+    private double delta;
 
     public EventEffect() {
         stat = null;
@@ -13,7 +13,7 @@ public class EventEffect {
         this.stat = stat;
     }
 
-    public void setDelta(int delta) {
+    public void setDelta(double delta) {
         this.delta = delta;
     }
 
@@ -21,7 +21,7 @@ public class EventEffect {
         return stat;
     }
 
-    public int getDelta() {
+    public double getDelta() {
         return delta;
     }
 }

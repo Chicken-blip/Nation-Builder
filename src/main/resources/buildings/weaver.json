@@ -1,5 +1,6 @@
 {
   "name": "Weaver",
+  "buildingSector": "OTHER",
   "cost": [
     {"stat": "WOOD", "delta": -50},
     {"stat": "STONE", "delta": -30}

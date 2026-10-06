@@ -1,0 +1,15 @@
+{
+  "role": "POWER_MINISTER",
+  "candidates": [
+    {
+      "name": "Carla Reyes",
+      "bonusPercent": 0.15,
+      "upkeep": 50
+    },
+    {
+      "name": "Bob Marsh",
+      "bonusPercent": 0.25,
+      "upkeep": 120
+    }
+  ]
+}

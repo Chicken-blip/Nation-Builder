@@ -15,7 +15,7 @@ public class BuildingLoader {
             InputStream inStrm = getClass().getResourceAsStream("/buildings/" + filename);
             return mapper.readValue(inStrm, Building.class);
         } catch (IOException e) {
-            throw new RuntimeException("Building file not found: " + filename);
+            throw new RuntimeException("Building file not found: " + filename + e.getMessage());
         }
     }
     public List<Building> loadAll() {

@@ -1,5 +1,6 @@
 {
   "name": "Power Plant",
+  "buildingSector": "OTHER",
   "cost": [
     {"stat": "WOOD", "delta": -60},
     {"stat": "STONE", "delta": -40},

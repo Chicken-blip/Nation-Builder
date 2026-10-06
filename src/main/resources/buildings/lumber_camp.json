@@ -1,5 +1,6 @@
 {
   "name": "Lumber Camp",
+  "buildingSector": "INDUSTRY",
   "cost": [
     {"stat": "WOOD", "delta": -50}
   ],

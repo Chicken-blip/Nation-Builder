@@ -9,11 +9,13 @@ public class Building {
     private List<EventEffect> output;
     private int powerRequired = 0, powerOutput = 0;
     private int upkeep;
+    private BuildingSector buildingSector;
 
     public Building() {
         cost = new ArrayList<>();
         output = new ArrayList<>();
         name = null;
+        buildingSector = null;
     }
 
     public String getName() {
@@ -62,5 +64,12 @@ public class Building {
 
     public int getUpkeep() {
         return upkeep;
+    }
+
+    public BuildingSector getBuildingSector() {
+        return buildingSector;
+    }
+    public void setSector(BuildingSector sector) {
+        this.buildingSector = sector;
     }
 }

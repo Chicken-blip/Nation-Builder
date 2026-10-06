@@ -12,11 +12,11 @@
     "CLOTH": 18
   },
   "sellPrices": {
-    "WOOD": 0.15,
-    "STONE": 0.2,
-    "IRON": 0.3,
-    "COAL": 0.25,
-    "FOOD": 0.3,
-    "CLOTH": 0.2
+    "WOOD": 0.3,
+    "STONE": 0.4,
+    "IRON": 0.6,
+    "COAL": 0.5,
+    "FOOD": 0.6,
+    "CLOTH": 0.4
   }
 }

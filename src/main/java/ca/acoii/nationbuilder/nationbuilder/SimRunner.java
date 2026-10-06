@@ -103,7 +103,7 @@ public class SimRunner {
             return false;
         }
 
-        int sparePower = engine.getPowerSupply() - engine.getPowerDemand();
+        double sparePower = engine.getPowerSupply() - engine.getPowerDemand();
         if (sparePower < farm.getPowerRequired()
                 && !tryBuildPowerPlant(player, engine)) {
             return false;
@@ -116,7 +116,7 @@ public class SimRunner {
             }
 
             Stat resource = cost.getStat();
-            int missing = -cost.getDelta() - player.getValue(resource);
+            double missing = -cost.getDelta() - player.getValue(resource);
             if (missing <= 0) {
                 continue;
             }
@@ -138,7 +138,7 @@ public class SimRunner {
             if (!supplier.hasAgreement(AgreementType.TRADE)) {
                 engine.establishTradeAgreement(supplier);
             }
-            if (!engine.buyResource(supplier, resource, missing)) {
+            if (!engine.buyResource(supplier, resource, (int) missing)) {
                 return false;
             }
         }
@@ -197,7 +197,7 @@ public class SimRunner {
             }
 
             Stat resource = cost.getStat();
-            int missing = -cost.getDelta() - player.getValue(resource);
+            double missing = -cost.getDelta() - player.getValue(resource);
             if (missing <= 0) {
                 continue;
             }
@@ -211,7 +211,7 @@ public class SimRunner {
                 return false;
             }
 
-            quantities.put(resource, missing);
+            quantities.put(resource, (int) missing);
             suppliers.put(resource, supplier);
             totalCost += supplier.buyPrice(resource) * missing;
         }

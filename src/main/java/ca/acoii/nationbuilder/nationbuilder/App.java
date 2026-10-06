@@ -12,7 +12,9 @@ import javafx.scene.control.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class App extends Application implements NationListener, GameEngineListener {
     private Label goldLabel, stabLabel, popLabel, powerLabel, turnLabel;
@@ -27,6 +29,8 @@ public class App extends Application implements NationListener, GameEngineListen
     private List<Button> diplomacyBtns = new ArrayList<>();
     private List<Label> popLabels = new ArrayList<>();
     private List<Label> infraLabels = new ArrayList<>();
+    private Map<Candidate, Button> appointBtns = new HashMap<>();
+    private Map<Candidate, Button> dismissBtns = new HashMap<>();
     private Nation selectedNation;
 
     @Override
@@ -40,6 +44,7 @@ public class App extends Application implements NationListener, GameEngineListen
         engine.loadEvents();
         engine.loadBuildings();
         engine.loadInfrastructure();
+        engine.loadAppointees();
 
         //Resource items
         goldLabel = new Label();
@@ -93,7 +98,13 @@ public class App extends Application implements NationListener, GameEngineListen
         });
         btn7.setPrefWidth(btnWidth);
         btn7.setPrefHeight(btnHeight);
-        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7);
+        Button btn8 = new Button("Appointees");
+        btn8.setOnAction(e -> {
+            showSubMenu("Appointees", appointeeMenu());
+        });
+        btn8.setPrefWidth(btnWidth);
+        btn8.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8);
         menuPane.setPrefColumns(3);
         menuPane.setMaxWidth(500);
         menuPane.setAlignment(Pos.CENTER);
@@ -213,15 +224,16 @@ public class App extends Application implements NationListener, GameEngineListen
             Label name = new Label(b.getName());
             TitledPane cost = new TitledPane();
             cost.setText("Expand");
-            cost.setContent(new VBox(10, new Label(formatEffects(b.getCost(), 1))));
+            cost.setContent(new VBox(10, new Label(formatEffects(b.getCost(), 1, b))));
             cost.setExpanded(false);
-            Label output = new Label(formatEffects(b.getOutput(), 0));
+            Label output = new Label(formatEffects(b.getOutput(), 0, b));
             Label upkeep = new Label(b.getUpkeep() + " gold/turn");
             Label count = new Label("Owned: " + engine.getBuildingCount(b));
             Button buildBtn = new Button("Build");
             buildBtn.setOnAction(e -> {
                 if (engine.build(b.getName(), 1)) {
                     System.out.println("Successfully build " + b.getName());
+                    powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply());
                 } else {
                     System.out.println("Failed to build " + b.getName());
                 }
@@ -240,13 +252,25 @@ public class App extends Application implements NationListener, GameEngineListen
         return grid;
     }
 
-    private String formatEffects(List<EventEffect> cost, int type) {
+    private String formatEffects(List<EventEffect> cost, int type, Object source) {
         String str = "";
+        double bonus = 1.0;
+        if (source instanceof Building) {
+            if (((Building) source).getBuildingSector() == BuildingSector.INDUSTRY) {
+                bonus = engine.getAppointeeBonus(BonusType.INDUSTRY_OUTPUT);
+            } else if (((Building) source).getBuildingSector() == BuildingSector.AGRICULTURE) {
+                bonus = engine.getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT);
+            }
+        }
         switch (type) {
             case 0 -> {
                 //Default, longlist
                 for (EventEffect e : cost) {
-                    str += e.getStat() + ": " + e.getDelta();
+                    if (bonus != 1.0 && e.getDelta() > 0) {
+                        str += e.getStat() + ": " + String.format("%.0f", (e.getDelta() * bonus));
+                    } else {
+                        str += e.getStat() + ": " + String.format("%.0f", e.getDelta());
+                    }
                     if (e != cost.getLast()) {
                         str += ", ";
                     }
@@ -449,7 +473,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Labels below
         Label taxLabel1 = new Label("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
-        Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5)) + "/turn");
+        Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5 * engine.getAppointeeBonus(BonusType.TAX_INCOME))) + "/turn");
         Label taxLabel3 = new Label("");
         Label taxLabel4 = new Label("");
         if (engine.isStarving()) {
@@ -553,7 +577,7 @@ public class App extends Application implements NationListener, GameEngineListen
                 Label name = new Label(i.getName());
                 TitledPane cost = new TitledPane();
                 cost.setText("Expand");
-                cost.setContent(new VBox(10, new Label(formatEffects(i.getCost(), 1))));
+                cost.setContent(new VBox(10, new Label(formatEffects(i.getCost(), 1, i))));
                 cost.setExpanded(false);
                 Label energy = new Label(i.getPowerRequired() + "");
                 Label happiness = new Label(i.getHappiness() + "");
@@ -566,7 +590,9 @@ public class App extends Application implements NationListener, GameEngineListen
                     } else {
                         System.out.println("Failed to build " + i.getName());
                     }
-                    showSubMenu("Infrastructure", infrastructureMenu());
+                    count.setText(engine.getInfrastructureCount(i) + "");
+                    current.setText("Provided Happiness: " + engine.getInfraHappiness(s) + " | Required Happiness: " + engine.getHappinessRequired(s));
+                    powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply());
                 });
 
                 grid.add(name, 0, row);
@@ -588,6 +614,92 @@ public class App extends Application implements NationListener, GameEngineListen
         return side;
     }
 
+    private HBox appointeeMenu() {
+        HBox main = new HBox(50);
+        main.setPadding(new Insets(20));
+
+        ListView<Role> categories = new ListView<>();
+        categories.setPrefHeight(150);
+        for (Role r : Role.values()) {
+            categories.getItems().add(r);
+        }
+        categories.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, s) -> {
+                    if (s != null) {
+                        //Update right-side of pane
+                        if (main.getChildren().size() > 1) {
+                            main.getChildren().removeLast();
+                        }
+                        appointBtns = new HashMap<>();
+                        main.getChildren().add(appointeeSideMenu(s));
+
+                    }
+                });
+
+        categories.setMaxWidth(150);
+        categories.setMinWidth(150);
+
+        main.getChildren().add(categories);
+
+        return main;
+    }
+
+    private VBox appointeeSideMenu(Role s) {
+        VBox side = new VBox(20);
+        side.setPadding(new Insets(20));
+
+        Label heading = new Label("Current Appointee: " + (engine.getAppointee(s) != null ? engine.getAppointee(s).getName() : "N/A"));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        grid.add(new Label("Name"), 0, 0);
+        grid.add(new Label("Bonus"), 1, 0);
+        grid.add(new Label("Upkeep"), 2, 0);
+
+        int row = 1;
+
+        for (Candidate c : engine.getCandidates(s)) {
+            Label name = new Label(c.getName());
+            Label bonus = new Label(String.format("%.2f", c.getBonusPercent() * 100.0));
+            Label upkeep = new Label(c.getUpkeep() + " gold/turn");
+            Button appBtn = new Button("Appoint");
+            Button disBtn = new Button("Dismiss");
+            if (engine.getAppointee(s) == c) appBtn.setDisable(true);
+            if (engine.getAppointee(s) != c) appBtn.setDisable(true);
+            appBtn.setOnAction(e -> {
+                Candidate prior = engine.getAppointee(s);
+                engine.appoint(s, c);
+                refreshAppointeeScreen(s, prior, c);
+            });
+
+            appointBtns.put(c, appBtn);
+            dismissBtns.put(c, disBtn);
+
+            grid.add(name, 0, row);
+            grid.add(bonus, 1, row);
+            grid.add(upkeep, 2, row);
+            grid.add(appBtn, 3, row);
+
+            row++;
+        }
+
+        side.getChildren().addAll(heading, grid);
+
+        return side;
+    }
+
+    private void refreshAppointeeScreen(Role s, Candidate prior, Candidate c) {
+        if (appointBtns.get(prior) != null) {
+            appointBtns.get(prior).setDisable(false);
+            dismissBtns.get(prior).setDisable(true);
+        }
+        appointBtns.get(c).setDisable(true);
+        dismissBtns.get(c).setDisable(false);
+
+    }
+
     private int parseInt(TextField field) {
         try {
             String str = field.getText();
@@ -607,10 +719,10 @@ public class App extends Application implements NationListener, GameEngineListen
         stabLabel.setText("Stability: " + nation.getValue(Stat.STABILITY));
         popLabel.setText("Population: " + nation.getValue(Stat.POPULATION));
         if (engine.getPowerSupply() < engine.getPowerDemand()) {
-            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply() + " | HALTED");
             powerLabel.setTextFill(Color.RED);
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + (int) engine.getPowerSupply() + " | HALTED");
         } else {
-            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + engine.getPowerSupply());
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + (int) engine.getPowerSupply());
             powerLabel.setTextFill(Color.BLACK);
         }
     }
@@ -624,10 +736,14 @@ public class App extends Application implements NationListener, GameEngineListen
 
     private void applyEffects(EventResult evtResult) {
         for (EventEffect e : evtResult.getEffects()) {
-            int current = 0;
-            int change = e.getDelta();
+            double current = 0;
+            double change = e.getDelta();
             current = yourNation.getValue(e.getStat());
-            yourNation.setValue(e.getStat(), current + change);
+            if (e.getStat() == Stat.GOLD) {
+                yourNation.setGold(yourNation.getGold() + change);
+            } else {
+                yourNation.setValue(e.getStat(), (int) (current + change));
+            }
         }
     }
 }

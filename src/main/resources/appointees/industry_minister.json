@@ -1,0 +1,15 @@
+{
+  "role": "INDUSTRY_MINISTER",
+  "candidates": [
+    {
+      "name": "Elena Rodriguez",
+      "bonusPercent": 0.1,
+      "upkeep": 40
+    },
+    {
+      "name": "Felix Arden",
+      "bonusPercent": 0.2,
+      "upkeep": 100
+    }
+  ]
+}

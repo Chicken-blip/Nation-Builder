@@ -1,5 +1,6 @@
 {
   "name": "Quarry",
+  "buildingSector": "INDUSTRY",
   "cost": [
     {"stat": "WOOD", "delta": -30}
   ],

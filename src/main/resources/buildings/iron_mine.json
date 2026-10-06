@@ -1,5 +1,6 @@
 {
   "name": "Iron Mine",
+  "buildingSector": "INDUSTRY",
   "cost": [
     {"stat": "WOOD", "delta": -40},
     {"stat": "STONE", "delta": -20}

@@ -9,9 +9,11 @@ public class GameEngine {
     private List<GameEvent> events;
     private List<Building> buildings;
     private List<Infrastructure> infrastructures;
+    private Map<Role, List<Candidate>> roleCandidates;
     private List<Nation> otherNations = new ArrayList<>();
     private final Map<String, Integer> builtBuildings = new HashMap<>();
     private final Map<String, Integer> builtInfrastructure = new HashMap<>();
+    private final Map<Role, Candidate> appointedRoles = new HashMap<>();
     private final Map<Stat, Double> consumables = new HashMap<>();
     private double taxRate;
     private boolean starving;
@@ -36,6 +38,7 @@ public class GameEngine {
         populationEffects();
         applyTaxes();
         applyInfraEffects();
+        applyAppointeeUpkeep();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {
                 n.removeAgreement(AgreementType.TRADE);
@@ -58,8 +61,15 @@ public class GameEngine {
         }
     }
 
+    private void applyAppointeeUpkeep() {        for (Role r : appointedRoles.keySet()) {
+            Candidate c = appointedRoles.get(r);
+            assert c != null;
+            playerNation.setGold((-c.getUpkeep()) + playerNation.getGold());
+        }
+    }
+
     private void applyBuildingOutput() {
-        int capacity = getPowerSupply() - getPowerDemand();
+        double capacity = getPowerSupply() - getPowerDemand();
         for (String s : builtBuildings.keySet()) {
             Building b = getBuilding(s);
             assert b != null;
@@ -67,6 +77,11 @@ public class GameEngine {
             int count = builtBuildings.get(s);
             for (EventEffect e : b.getOutput()) {
                 for (int i = 0; i < count; i++) {
+                    if (b.getBuildingSector() == BuildingSector.INDUSTRY) {
+                        e.setDelta(e.getDelta() * getAppointeeBonus(BonusType.INDUSTRY_OUTPUT));
+                    } else if (b.getBuildingSector() == BuildingSector.AGRICULTURE) {
+                        e.setDelta(e.getDelta() * getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT));
+                    }
                     applyEffect(e);
                 }
             }
@@ -130,6 +145,14 @@ public class GameEngine {
         infrastructures = new InfrastructureLoader().loadAll();
         for (Infrastructure i : infrastructures) {
             System.out.println("Infrastructure: " + i.getName());
+        }
+    }
+
+    public void loadAppointees() {
+        roleCandidates = new HashMap<>();
+        List<RoleFile> files = new AppointeeLoader().loadAll();
+        for (RoleFile x : files) {
+            roleCandidates.put(x.role, x.candidates);
         }
     }
 
@@ -244,9 +267,27 @@ public class GameEngine {
         return false;
     }
 
+    public void appoint(Role role, Candidate c) {
+        appointedRoles.put(role, c);
+    }
+    public void dismiss(Role role) {
+        appointedRoles.remove(role);
+    }
 
-
-
+    public double getAppointeeBonus(BonusType b) {
+        for (Role r : appointedRoles.keySet()) {
+            if (r.getBonusType() == b) {
+                return 1.0 + appointedRoles.get(r).getBonusPercent();
+            }
+        }
+        return 1.0;
+    }
+    public Candidate getAppointee(Role r) {
+        return appointedRoles.getOrDefault(r,null);
+    }
+    public List<Candidate> getCandidates(Role r) {
+        return roleCandidates.get(r);
+    }
     public void establishTradeAgreement(Nation n) {
         n.addAgreement(AgreementType.TRADE);
     }
@@ -341,7 +382,9 @@ public class GameEngine {
 
     public void applyTaxes() {
         int pop = playerNation.getValue(Stat.POPULATION);
-        int revenue = (int) (pop * taxRate * 0.2);
+        double revenue = (pop * taxRate * 0.2);
+        revenue *= getAppointeeBonus(BonusType.TAX_INCOME);
+
         playerNation.setGold(playerNation.getGold() + revenue);
 
         double threshold = 0.4;
@@ -352,13 +395,14 @@ public class GameEngine {
         }
     }
 
-    public int getPowerSupply() {
-        int sum = 0;
+    public double getPowerSupply() {
+        double sum = 0;
         if (builtBuildings.isEmpty()) return 0;
         for (String b: builtBuildings.keySet()) {
             assert getBuilding(b) != null;
             sum += (getBuilding(b).getPowerOutput()) * builtBuildings.get(b);
         }
+        sum *= getAppointeeBonus(BonusType.POWER_OUTPUT);
         return sum;
     }
     public int getPowerDemand() {
