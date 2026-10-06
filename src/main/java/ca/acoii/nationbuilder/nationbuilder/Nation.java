@@ -39,18 +39,27 @@ public class Nation {
         this.name = name;
         this.buyPrices = buyPrices;
         this.sellPrices = sellPrices;
-        setGold(gold);
+        setValue(Stat.GOLD, gold);
         setValue(Stat.STABILITY, stability);
         setValue(Stat.RELATIONS, relations);
     }
 
     //General Getter - use for all getting (except for name)
     public int getValue(Stat stat) {
-        return stats.getOrDefault(stat, 0);
+        if (stat == Stat.GOLD) {
+            return (int) gold;
+        } else {
+            return stats.getOrDefault(stat, 0);
+        }
     }
-    public double getGold() {
-        return gold;
+    public double getValue(Stat stat, int i) {
+        if (stat == Stat.GOLD) {
+            return gold;
+        } else {
+            return stats.getOrDefault(stat, 0);
+        }
     }
+
     //Exception - Name getter
     public String getName() {
         return name;
@@ -58,16 +67,21 @@ public class Nation {
 
     //General Setter - use for all setting
     public void setValue(Stat stat, int newValue) {
+        if (stat == Stat.GOLD) {
+            gold = newValue;
+            notifyListeners();
+        }
         if (stats.getOrDefault(stat, 0) != newValue) {
             stats.put(stat, newValue);
             notifyListeners();
         }
     }
 
-    public void setGold(double newValue) {
-        //Only applies for gold
-        this.gold = newValue;
-        notifyListeners();
+    public void setValue(Stat stat, double newValue) {
+        if (stat == Stat.GOLD) {
+            gold = newValue;
+            notifyListeners();
+        }
     }
 
     public boolean hasAgreement(AgreementType a) {

@@ -9,6 +9,9 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - JSON-based schema for Buildings and Nations
 - Different menus for managing population, diplomacy, buildings, and other things
 - infrastructure to support population happiness
+- Appointees to boost output and production
+- Law Enactments to provide major bonuses
+- 
 
 # Roadmap
 - Military management

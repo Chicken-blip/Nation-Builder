@@ -52,19 +52,19 @@ public class GameEngine {
         for (String str : builtBuildings.keySet()) {
             Building b = getBuilding(str);
             assert b != null;
-            playerNation.setGold((-b.getUpkeep() * getBuildingCount(b)) + playerNation.getGold());
+            playerNation.setValue(Stat.GOLD, (-b.getUpkeep() * getBuildingCount(b)) + playerNation.getValue(Stat.GOLD));
         }
         for (String str : builtInfrastructure.keySet()) {
             Infrastructure i = getInfrastructure(str);
             assert i != null;
-            playerNation.setGold((-i.getUpkeep() * getInfrastructureCount(i)) + playerNation.getGold());
+            playerNation.setValue(Stat.GOLD, (-i.getUpkeep() * getInfrastructureCount(i)) + playerNation.getValue(Stat.GOLD));
         }
     }
 
     private void applyAppointeeUpkeep() {        for (Role r : appointedRoles.keySet()) {
             Candidate c = appointedRoles.get(r);
             assert c != null;
-            playerNation.setGold((-c.getUpkeep()) + playerNation.getGold());
+            playerNation.setValue(Stat.GOLD, (-c.getUpkeep()) + playerNation.getValue(Stat.GOLD));
         }
     }
 
@@ -77,12 +77,16 @@ public class GameEngine {
             int count = builtBuildings.get(s);
             for (EventEffect e : b.getOutput()) {
                 for (int i = 0; i < count; i++) {
+                    EventEffect a;
                     if (b.getBuildingSector() == BuildingSector.INDUSTRY) {
-                        e.setDelta(e.getDelta() * getAppointeeBonus(BonusType.INDUSTRY_OUTPUT));
+                        a = new EventEffect(e.getStat(), e.getDelta() * getAppointeeBonus(BonusType.INDUSTRY_OUTPUT));
+                        applyEffect(a);
                     } else if (b.getBuildingSector() == BuildingSector.AGRICULTURE) {
-                        e.setDelta(e.getDelta() * getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT));
+                        a = new EventEffect(e.getStat(), e.getDelta() * getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT));
+                        applyEffect(a);
+                    } else {
+                        applyEffect(e);
                     }
-                    applyEffect(e);
                 }
             }
         }
@@ -90,11 +94,14 @@ public class GameEngine {
     }
 
     private void applyInfraEffects() {
+        int adjustments = 0;
         for (InfraCategory e : InfraCategory.values()) {
             if (getInfraHappiness(e) < getHappinessRequired(e)) {
-                adjustStat(Stat.STABILITY,-1);
+                adjustments--;
             }
         }
+        if (adjustments == 0) {adjustments = 1;}
+        adjustStat(Stat.STABILITY, adjustments);
     }
 
     private void adjustStat(Stat stat, int change) {
@@ -102,7 +109,7 @@ public class GameEngine {
     }
 
     private void adjustStat(Stat stat, double change) {
-        playerNation.setGold( playerNation.getGold() + change);
+        playerNation.setValue( stat, playerNation.getValue(stat) + change);
     }
 
     public int getTurn() {
@@ -295,8 +302,8 @@ public class GameEngine {
     public boolean buyResource(Nation seller, Stat resource, int qty) {
         if (!seller.hasAgreement(AgreementType.TRADE)) return false;
         double cost = seller.buyPrice(resource) * qty;
-        if (playerNation.getGold() < cost) return false;
-        playerNation.setGold(playerNation.getGold() - cost);
+        if (playerNation.getValue(Stat.GOLD, 1) < cost) return false;
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) - cost);
         adjustStat(resource, qty);
         return true;
     }
@@ -305,13 +312,17 @@ public class GameEngine {
         if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
         double revenue = buyer.sellPrice(resource) * qty;
         if (playerNation.getValue(resource) < qty) return false;
-        playerNation.setGold(playerNation.getGold() + revenue);
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) + revenue);
         adjustStat(resource, -qty);
         return true;
     }
 
     private void applyEffect(EventEffect e) {
-        adjustStat(e.getStat(), e.getDelta());
+        if (e.getStat() != Stat.GOLD) {
+            adjustStat(e.getStat(), (int) e.getDelta());
+        } else {
+            adjustStat(e.getStat(),e.getDelta());
+        }
     }
 
     private Building getBuilding(String n) {
@@ -385,7 +396,7 @@ public class GameEngine {
         double revenue = (pop * taxRate * 0.2);
         revenue *= getAppointeeBonus(BonusType.TAX_INCOME);
 
-        playerNation.setGold(playerNation.getGold() + revenue);
+        playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
 
         double threshold = 0.4;
         if (starving) threshold = 0.25;

@@ -321,11 +321,11 @@ public class App extends Application implements NationListener, GameEngineListen
         nationDetails.getChildren().addAll(diplomacyHeader, diplomacyDetail, diplomacyAgreements);
         Button btnSendGift = new Button("Send Gift (-50 Gold)");
         btnSendGift.setOnAction(e -> {
-            System.out.println("Clicked. Gold=" + yourNation.getGold() +
+            System.out.println("Clicked. Gold=" + yourNation.getValue(Stat.GOLD) +
                     " Relations=" + selectedNation.getValue(Stat.RELATIONS));
-            if (selectedNation == null || yourNation.getGold() < 50) return;
-            yourNation.setGold(yourNation.getGold() - 50);
-            selectedNation.setGold(selectedNation.getGold() + 50);
+            if (selectedNation == null || yourNation.getValue(Stat.GOLD) < 50) return;
+            yourNation.setValue(Stat.GOLD, yourNation.getValue(Stat.GOLD) - 50);
+            selectedNation.setValue(Stat.GOLD, selectedNation.getValue(Stat.GOLD) + 50);
             selectedNation.setValue(Stat.RELATIONS, selectedNation.getValue(Stat.RELATIONS) + 15);
             updateDiplomacyDetail(selectedNation);
         });
@@ -360,7 +360,7 @@ public class App extends Application implements NationListener, GameEngineListen
             }
             diplomacyAgreements.setText(str);
         }
-        diplomacyBtns.getFirst().setDisable(yourNation.getGold() < 50);
+        diplomacyBtns.getFirst().setDisable(yourNation.getValue(Stat.GOLD) < 50);
         diplomacyBtns.get(1).setDisable(selectedNation.hasAgreement(AgreementType.TRADE));
     }
 
@@ -667,11 +667,15 @@ public class App extends Application implements NationListener, GameEngineListen
             Button appBtn = new Button("Appoint");
             Button disBtn = new Button("Dismiss");
             if (engine.getAppointee(s) == c) appBtn.setDisable(true);
-            if (engine.getAppointee(s) != c) appBtn.setDisable(true);
+            if (engine.getAppointee(s) != c) disBtn.setDisable(true);
             appBtn.setOnAction(e -> {
                 Candidate prior = engine.getAppointee(s);
                 engine.appoint(s, c);
                 refreshAppointeeScreen(s, prior, c);
+            });
+            disBtn.setOnAction(e -> {
+                engine.dismiss(s);
+                refreshAppointeeScreen(s, c, null);
             });
 
             appointBtns.put(c, appBtn);
@@ -681,6 +685,7 @@ public class App extends Application implements NationListener, GameEngineListen
             grid.add(bonus, 1, row);
             grid.add(upkeep, 2, row);
             grid.add(appBtn, 3, row);
+            grid.add(disBtn, 4, row);
 
             row++;
         }
@@ -695,9 +700,10 @@ public class App extends Application implements NationListener, GameEngineListen
             appointBtns.get(prior).setDisable(false);
             dismissBtns.get(prior).setDisable(true);
         }
-        appointBtns.get(c).setDisable(true);
-        dismissBtns.get(c).setDisable(false);
-
+        if (appointBtns.get(c) != null) {
+            appointBtns.get(c).setDisable(true);
+            dismissBtns.get(c).setDisable(false);
+        }
     }
 
     private int parseInt(TextField field) {
@@ -715,14 +721,14 @@ public class App extends Application implements NationListener, GameEngineListen
 
     @Override
     public void onNationChanged(Nation nation) {
-        goldLabel.setText("Gold: " + String.format("%.2f", nation.getGold()));
+        goldLabel.setText("Gold: " + String.format("%.2f", nation.getValue(Stat.GOLD, 1)));
         stabLabel.setText("Stability: " + nation.getValue(Stat.STABILITY));
         popLabel.setText("Population: " + nation.getValue(Stat.POPULATION));
         if (engine.getPowerSupply() < engine.getPowerDemand()) {
             powerLabel.setTextFill(Color.RED);
-            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + (int) engine.getPowerSupply() + " | HALTED");
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + ((int) engine.getPowerSupply()) + " | HALTED");
         } else {
-            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + (int) engine.getPowerSupply());
+            powerLabel.setText("Power: " + engine.getPowerDemand() + " / " + ((int) engine.getPowerSupply()));
             powerLabel.setTextFill(Color.BLACK);
         }
     }
@@ -740,7 +746,7 @@ public class App extends Application implements NationListener, GameEngineListen
             double change = e.getDelta();
             current = yourNation.getValue(e.getStat());
             if (e.getStat() == Stat.GOLD) {
-                yourNation.setGold(yourNation.getGold() + change);
+                yourNation.setValue(Stat.GOLD, yourNation.getValue(Stat.GOLD) + change);
             } else {
                 yourNation.setValue(e.getStat(), (int) (current + change));
             }

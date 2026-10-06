@@ -9,6 +9,11 @@ public class EventEffect {
         delta = 0;
     }
 
+    public EventEffect(Stat stat, double v) {
+        this.stat = stat;
+        this.delta = v;
+    }
+
     public void setStat(Stat stat) {
         this.stat = stat;
     }

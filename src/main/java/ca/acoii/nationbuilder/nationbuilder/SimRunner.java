@@ -52,7 +52,7 @@ public class SimRunner {
 
 
                 wr.write(tn + ","
-                        + n.getGold() + ","
+                        + n.getValue(Stat.GOLD) + ","
                         + n.getValue(Stat.POPULATION) + ","
                         + n.getValue(Stat.STABILITY) + ","
                         + n.getValue(Stat.FOOD) + ","
@@ -131,7 +131,7 @@ public class SimRunner {
             }
 
             double purchaseCost = supplier.buyPrice(resource) * missing;
-            if (player.getGold() < purchaseCost + GOLD_RESERVE) {
+            if (player.getValue(Stat.GOLD) < purchaseCost + GOLD_RESERVE) {
                 return false;
             }
 
@@ -216,7 +216,7 @@ public class SimRunner {
             totalCost += supplier.buyPrice(resource) * missing;
         }
 
-        if (player.getGold() < totalCost + GOLD_RESERVE) {
+        if (player.getValue(Stat.GOLD) < totalCost + GOLD_RESERVE) {
             return false;
         }
 
