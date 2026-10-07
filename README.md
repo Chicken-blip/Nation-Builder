@@ -11,15 +11,13 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - infrastructure to support population happiness
 - Appointees to boost output and production
 - Law Enactments to provide major bonuses
-- 
 
 # Roadmap
 - Military management
 - Research
 - Political narrative
-- Policies
 - Save/Load support
-- Expansion on events, nations, buildings, resources, and infrastructure
+- Expansion on events, nations, buildings, resources, infrastructure, appointees, and laws
 - Plenty of bugs and bug fixes
 - And more...
 

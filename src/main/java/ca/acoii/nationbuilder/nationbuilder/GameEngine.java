@@ -9,6 +9,9 @@ public class GameEngine {
     private List<GameEvent> events;
     private List<Building> buildings;
     private List<Infrastructure> infrastructures;
+    private List<Law> availableLaws;
+    private Law currentLaw = null;
+    private int lawCooldown = 0;
     private Map<Role, List<Candidate>> roleCandidates;
     private List<Nation> otherNations = new ArrayList<>();
     private final Map<String, Integer> builtBuildings = new HashMap<>();
@@ -44,6 +47,9 @@ public class GameEngine {
                 n.removeAgreement(AgreementType.TRADE);
             }
         }
+        if (lawCooldown > 0) lawCooldown--;
+        if (currentLaw != null) applyLawEffects();
+        if (playerNation.getValue(Stat.STABILITY) > 100) playerNation.setValue(Stat.STABILITY,100);
         turn++;
         notifyListeners();
     }
@@ -160,6 +166,40 @@ public class GameEngine {
         List<RoleFile> files = new AppointeeLoader().loadAll();
         for (RoleFile x : files) {
             roleCandidates.put(x.role, x.candidates);
+        }
+    }
+
+    public void loadLaws() {
+        availableLaws = new LawLoader().loadAll();
+    }
+
+    public boolean enactLaw(Law law) {
+        if (lawCooldown > 0) return false;
+        if (playerNation.getValue(Stat.GOLD) < getLawCost()) {
+            return false;
+        }
+        if (currentLaw != null) {
+            //Revert the current law's effects
+            repealLaw(currentLaw);
+        }
+        adjustStat(Stat.GOLD, -getLawCost());
+        currentLaw = law;
+        lawCooldown = 25;
+        notifyListeners();
+        return true;
+    }
+
+    public void repealLaw(Law law) {
+        currentLaw = null;
+    }
+
+    public int getLawCost() {
+        return (int) (playerNation.getValue(Stat.POPULATION) * Law.COST_CONSTANT);
+    }
+
+    public void applyLawEffects() {
+        for (Stat s : currentLaw.getCounterEffects().keySet()) {
+            adjustStat(s, currentLaw.getCounterEffects().get(s));
         }
     }
 
@@ -282,9 +322,18 @@ public class GameEngine {
     }
 
     public double getAppointeeBonus(BonusType b) {
+        //Also adds Law bonus, if applicable
+        double bonus = 1.0;
         for (Role r : appointedRoles.keySet()) {
             if (r.getBonusType() == b) {
-                return 1.0 + appointedRoles.get(r).getBonusPercent();
+                bonus += appointedRoles.get(r).getBonusPercent();
+            }
+            if (currentLaw != null) {
+                for (BonusType e : currentLaw.getBonuses().keySet()) {
+                    if (e == b) {
+                        bonus += currentLaw.getBonuses().get(e);
+                    }
+                }
             }
         }
         return 1.0;
@@ -295,6 +344,11 @@ public class GameEngine {
     public List<Candidate> getCandidates(Role r) {
         return roleCandidates.get(r);
     }
+
+    public List<Law> getAvailableLaws() {
+        return availableLaws;
+    }
+
     public void establishTradeAgreement(Nation n) {
         n.addAgreement(AgreementType.TRADE);
     }
@@ -456,5 +510,13 @@ public class GameEngine {
 
     public void setTaxRate(double taxRate) {
         this.taxRate = taxRate;
+    }
+
+    public Law getCurrentLaw() {
+        return this.currentLaw;
+    }
+
+    public int getLawCooldown() {
+        return this.lawCooldown;
     }
 }

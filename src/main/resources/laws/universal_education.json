@@ -1,0 +1,10 @@
+{
+  "name": "Universal Education",
+  "description": "Compulsory schooling raises the quality of your workforce.",
+  "bonuses": {
+    "TAX_INCOME": 0.15
+  },
+  "counterEffects": {
+    "STABILITY": -2
+  }
+}

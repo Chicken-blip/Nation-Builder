@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.layout.*;
+import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.*;
@@ -45,6 +46,7 @@ public class App extends Application implements NationListener, GameEngineListen
         engine.loadBuildings();
         engine.loadInfrastructure();
         engine.loadAppointees();
+        engine.loadLaws();
 
         //Resource items
         goldLabel = new Label();
@@ -104,7 +106,13 @@ public class App extends Application implements NationListener, GameEngineListen
         });
         btn8.setPrefWidth(btnWidth);
         btn8.setPrefHeight(btnHeight);
-        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8);
+        Button btn9 = new Button("Laws");
+        btn9.setOnAction(e -> {
+            showSubMenu("Laws", lawMenu());
+        });
+        btn9.setPrefWidth(btnWidth);
+        btn9.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9);
         menuPane.setPrefColumns(3);
         menuPane.setMaxWidth(500);
         menuPane.setAlignment(Pos.CENTER);
@@ -704,6 +712,54 @@ public class App extends Application implements NationListener, GameEngineListen
             appointBtns.get(c).setDisable(true);
             dismissBtns.get(c).setDisable(false);
         }
+    }
+
+    private VBox lawMenu() {
+        VBox main = new VBox(30);
+        main.setPadding(new Insets(30));
+
+        Label lawLabel = new Label("Current Law: " + (engine.getCurrentLaw() == null ? "N/A" : engine.getCurrentLaw().getName()));
+        Label cooldownLabel = new Label("Remaining Cooldown Turns: " + (engine.getLawCooldown() == 0 ? "N/A" : engine.getLawCooldown()));
+        Label costLabel = new Label("Law Cost: " + engine.getLawCost() + " gold");
+
+        main.getChildren().addAll(lawLabel, cooldownLabel, costLabel);
+
+        VBox submain = new VBox(5);
+        submain.setPadding(new Insets(10));
+
+        for (Law l : engine.getAvailableLaws()) {
+            HBox container = new HBox(10);
+            container.setPadding(new Insets(10));
+            container.setAlignment(Pos.CENTER_LEFT);
+
+            Label name = new Label(l.getName());
+            name.setMinWidth(150);
+
+            Label desc = new Label(l.getDescription());
+            desc.setPrefWidth(300);
+            desc.setWrapText(true);
+            HBox.setHgrow(desc, Priority.ALWAYS);
+            Button enactBtn = new Button("Enact");
+            if (engine.getCurrentLaw() == l) {
+                enactBtn.setDisable(true);
+            }
+            enactBtn.setOnAction(e -> {
+                if (engine.enactLaw(l)) {
+                    System.out.println("Successfully enacted " + l.getName());
+                } else {
+                    System.out.println("Failed to enact " + l.getName());
+                }
+                showSubMenu("Laws", lawMenu());
+            });
+
+            container.getChildren().addAll(name, desc, enactBtn);
+
+            submain.getChildren().add(container);
+        }
+
+        main.getChildren().add(submain);
+
+        return main;
     }
 
     private int parseInt(TextField field) {

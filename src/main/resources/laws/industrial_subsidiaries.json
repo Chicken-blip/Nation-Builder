@@ -1,0 +1,10 @@
+{
+  "name": "Industrial Subsidiaries",
+  "description": "Encourage the development of industry within the nation.",
+  "bonuses": {
+    "INDUSTRY_OUTPUT": 0.25
+  },
+  "counterEffects": {
+    "STABILITY": -1
+  }
+}
