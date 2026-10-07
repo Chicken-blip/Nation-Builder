@@ -1,0 +1,12 @@
+{
+  "id": "selective_breeding",
+  "name": "Selective Breeding",
+  "bonuses": {
+    "AGRICULTURE_OUTPUT": 0.15,
+    "POPULATION_GROWTH": 0.1
+  },
+  "researchTime": 50,
+  "startCost": 30000,
+  "maintenanceCost": 50,
+  "prerequisites": ["crop_rotation"]
+}

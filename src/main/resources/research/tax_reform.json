@@ -1,0 +1,11 @@
+{
+  "id": "tax_reform",
+  "name": "Tax Reform",
+  "bonuses": {
+      "TAX_INCOME": 0.1
+    },
+  "researchTime": 30,
+  "startCost": 10000,
+  "maintenanceCost": 20,
+  "prerequisites": []
+}

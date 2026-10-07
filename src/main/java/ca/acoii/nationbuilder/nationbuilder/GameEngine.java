@@ -18,6 +18,9 @@ public class GameEngine {
     private final Map<String, Integer> builtInfrastructure = new HashMap<>();
     private final Map<Role, Candidate> appointedRoles = new HashMap<>();
     private final Map<Stat, Double> consumables = new HashMap<>();
+    private List<ResearchNode> researchNodes, researched = new ArrayList<>();
+    private ResearchNode activeNode;
+    private int nodeTime;
     private double taxRate;
     private boolean starving;
     public GameEngine(Nation nation) {
@@ -48,6 +51,12 @@ public class GameEngine {
             }
         }
         if (lawCooldown > 0) lawCooldown--;
+        if (nodeTime > 0) nodeTime--;
+        if (nodeTime == 0 && activeNode != null) {
+            researched.add(activeNode);
+            activeNode = null;
+        }
+        applyResearchUpkeep();
         if (currentLaw != null) applyLawEffects();
         if (playerNation.getValue(Stat.STABILITY) > 100) playerNation.setValue(Stat.STABILITY,100);
         turn++;
@@ -58,19 +67,26 @@ public class GameEngine {
         for (String str : builtBuildings.keySet()) {
             Building b = getBuilding(str);
             assert b != null;
-            playerNation.setValue(Stat.GOLD, (-b.getUpkeep() * getBuildingCount(b)) + playerNation.getValue(Stat.GOLD));
+            adjustStat(Stat.GOLD, (-b.getUpkeep() * getBuildingCount(b)));
         }
         for (String str : builtInfrastructure.keySet()) {
             Infrastructure i = getInfrastructure(str);
             assert i != null;
-            playerNation.setValue(Stat.GOLD, (-i.getUpkeep() * getInfrastructureCount(i)) + playerNation.getValue(Stat.GOLD));
+            adjustStat(Stat.GOLD, (-i.getUpkeep() * getInfrastructureCount(i)));
         }
     }
 
-    private void applyAppointeeUpkeep() {        for (Role r : appointedRoles.keySet()) {
+    private void applyAppointeeUpkeep() {
+        for (Role r : appointedRoles.keySet()) {
             Candidate c = appointedRoles.get(r);
             assert c != null;
-            playerNation.setValue(Stat.GOLD, (-c.getUpkeep()) + playerNation.getValue(Stat.GOLD));
+            adjustStat(Stat.GOLD, -c.getUpkeep());
+        }
+    }
+
+    private void applyResearchUpkeep() {
+        for (ResearchNode n : researched) {
+            adjustStat(Stat.GOLD, -n.getMaintenanceCost());
         }
     }
 
@@ -85,10 +101,10 @@ public class GameEngine {
                 for (int i = 0; i < count; i++) {
                     EventEffect a;
                     if (b.getBuildingSector() == BuildingSector.INDUSTRY) {
-                        a = new EventEffect(e.getStat(), e.getDelta() * getAppointeeBonus(BonusType.INDUSTRY_OUTPUT));
+                        a = new EventEffect(e.getStat(), e.getDelta() * getBonusMultiplier(BonusType.INDUSTRY_OUTPUT));
                         applyEffect(a);
                     } else if (b.getBuildingSector() == BuildingSector.AGRICULTURE) {
-                        a = new EventEffect(e.getStat(), e.getDelta() * getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT));
+                        a = new EventEffect(e.getStat(), e.getDelta() * getBonusMultiplier(BonusType.AGRICULTURE_OUTPUT));
                         applyEffect(a);
                     } else {
                         applyEffect(e);
@@ -171,6 +187,10 @@ public class GameEngine {
 
     public void loadLaws() {
         availableLaws = new LawLoader().loadAll();
+    }
+
+    public void loadResearchNodes() {
+        researchNodes = new ResearchLoader().loadAll();
     }
 
     public boolean enactLaw(Law law) {
@@ -324,18 +344,25 @@ public class GameEngine {
         appointedRoles.remove(role);
     }
 
-    public double getAppointeeBonus(BonusType b) {
-        //Also adds Law bonus, if applicable
+    public double getBonusMultiplier(BonusType b) {
+        //Adds Appointee, Law, and Research bonus, if applicable
         double bonus = 1.0;
         for (Role r : appointedRoles.keySet()) {
             if (r.getBonusType() == b) {
                 bonus += appointedRoles.get(r).getBonusPercent();
             }
-            if (currentLaw != null) {
-                for (BonusType e : currentLaw.getBonuses().keySet()) {
-                    if (e == b) {
-                        bonus += currentLaw.getBonuses().get(e);
-                    }
+        }
+        if (currentLaw != null) {
+            for (BonusType e : currentLaw.getBonuses().keySet()) {
+                if (e == b) {
+                    bonus += currentLaw.getBonuses().get(e);
+                }
+            }
+        }
+        for (ResearchNode n : researched) {
+            for (BonusType e : n.getBonuses().keySet()) {
+                if (e == b) {
+                    bonus += n.getBonuses().get(e);
                 }
             }
         }
@@ -434,7 +461,7 @@ public class GameEngine {
         //Population changes!
         if (shortages == 0) {
             //No shortages - population grows
-            adjustStat(Stat.POPULATION, pop / 50);
+            adjustStat(Stat.POPULATION, (pop / 50) * getBonusMultiplier(BonusType.POPULATION_GROWTH));
         } else {
             //Shortages exist - population declines
             adjustStat(Stat.POPULATION, -(pop / 20));
@@ -451,7 +478,7 @@ public class GameEngine {
     public void applyTaxes() {
         int pop = playerNation.getValue(Stat.POPULATION);
         double revenue = (pop * taxRate * 0.2);
-        revenue *= getAppointeeBonus(BonusType.TAX_INCOME);
+        revenue *= getBonusMultiplier(BonusType.TAX_INCOME);
 
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
 
@@ -470,7 +497,7 @@ public class GameEngine {
             assert getBuilding(b) != null;
             sum += (getBuilding(b).getPowerOutput()) * builtBuildings.get(b);
         }
-        sum *= getAppointeeBonus(BonusType.POWER_OUTPUT);
+        sum *= getBonusMultiplier(BonusType.POWER_OUTPUT);
         return sum;
     }
     public int getPowerDemand() {
@@ -521,6 +548,49 @@ public class GameEngine {
 
     public int getLawCooldown() {
         return this.lawCooldown;
+    }
+    public ResearchNode getResearchNode(String id) {
+        for (ResearchNode n : researchNodes) {
+            if (Objects.equals(n.getId(), id)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    public List<ResearchNode> getResearchNodes() {
+        return researchNodes;
+    }
+
+    public boolean beginResearch(ResearchNode node) {
+        //Check if this node is already researched
+        if (researched.contains(node)) {return false;}
+
+        //Check if any node is currently being researched
+        if (nodeTime > 0) {return false;}
+
+        //Check if all prerequisites are met
+        for (String prereq : node.getPrerequisites()) {
+            if (!researched.contains(getResearchNode(prereq))) {return false;}
+        }
+
+        //Check if player can afford the starting cost
+        if (playerNation.getValue(Stat.GOLD) < node.getStartCost()) {return false;}
+
+        //Deducts the cost and starts research
+        adjustStat(Stat.GOLD, -node.getStartCost());
+        activeNode = node;
+        nodeTime = node.getResearchTime();
+
+        return true;
+    }
+
+    public boolean isResearched(ResearchNode node) {
+        return researched.contains(node);
+    }
+
+    public int getResearchTime() {
+        return nodeTime;
     }
 
     public void removePlaceholders(FiredEvent evt) {

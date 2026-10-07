@@ -47,6 +47,7 @@ public class App extends Application implements NationListener, GameEngineListen
         engine.loadInfrastructure();
         engine.loadAppointees();
         engine.loadLaws();
+        engine.loadResearchNodes();
 
         //Resource items
         goldLabel = new Label();
@@ -112,7 +113,13 @@ public class App extends Application implements NationListener, GameEngineListen
         });
         btn9.setPrefWidth(btnWidth);
         btn9.setPrefHeight(btnHeight);
-        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9);
+        Button btn10 = new Button("Research");
+        btn10.setOnAction(e -> {
+            showSubMenu("Research", researchMenu());
+        });
+        btn10.setPrefWidth(btnWidth);
+        btn10.setPrefHeight(btnHeight);
+        menuPane = new TilePane(30, 10, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10);
         menuPane.setPrefColumns(3);
         menuPane.setMaxWidth(500);
         menuPane.setAlignment(Pos.CENTER);
@@ -268,9 +275,9 @@ public class App extends Application implements NationListener, GameEngineListen
         double bonus = 1.0;
         if (source instanceof Building) {
             if (((Building) source).getBuildingSector() == BuildingSector.INDUSTRY) {
-                bonus = engine.getAppointeeBonus(BonusType.INDUSTRY_OUTPUT);
+                bonus = engine.getBonusMultiplier(BonusType.INDUSTRY_OUTPUT);
             } else if (((Building) source).getBuildingSector() == BuildingSector.AGRICULTURE) {
-                bonus = engine.getAppointeeBonus(BonusType.AGRICULTURE_OUTPUT);
+                bonus = engine.getBonusMultiplier(BonusType.AGRICULTURE_OUTPUT);
             }
         }
         switch (type) {
@@ -406,7 +413,7 @@ public class App extends Application implements NationListener, GameEngineListen
     }
 
     private VBox tradeSideMenu(Stat s) {
-        //Right Side - VBox with quanitty input, details of other nations, and buy/sell btns
+        //Right Side - VBox with quantity input, details of other nations, and buy/sell btns
         VBox side = new VBox(20);
         side.setPadding(new Insets(20));
 
@@ -484,7 +491,7 @@ public class App extends Application implements NationListener, GameEngineListen
 
         //Labels below
         Label taxLabel1 = new Label("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
-        Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5 * engine.getAppointeeBonus(BonusType.TAX_INCOME))) + "/turn");
+        Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5 * engine.getBonusMultiplier(BonusType.TAX_INCOME))) + "/turn");
         Label taxLabel3 = new Label("");
         Label taxLabel4 = new Label("");
         if (engine.isStarving()) {
@@ -763,6 +770,121 @@ public class App extends Application implements NationListener, GameEngineListen
         main.getChildren().add(submain);
 
         return main;
+    }
+
+    private HBox researchMenu() {
+        HBox main = new HBox(10);
+        main.setPadding(new Insets(20));
+
+        TreeView<ResearchNode> tree = new TreeView<>();
+        tree.setPadding(new Insets(20));
+        tree.setPrefHeight(150);
+        tree.setCellFactory(tv -> new TreeCell<ResearchNode>() {
+            @Override
+            protected void updateItem(ResearchNode item, boolean empty) {
+                super.updateItem(item, empty);
+                if (!empty && item != null) {
+                    setText(item.getName());
+                } else {
+                    setText(null);
+                }
+            }
+        });
+
+        //First run, make treeitems of each node
+        Map<ResearchNode, TreeItem<ResearchNode>> list = new HashMap<>();
+        for (ResearchNode n : engine.getResearchNodes()) {
+            TreeItem<ResearchNode> node = new TreeItem<>(n);
+            list.put(n, node);
+
+        }
+        //Second run, attach children to parents
+        for (ResearchNode n : list.keySet()) {
+            if (!n.getPrerequisites().isEmpty()) {
+                for (String x : n.getPrerequisites()) {
+                    list.get(engine.getResearchNode(x)).getChildren().add(list.get(n));
+                }
+            }
+        }
+
+        tree.getSelectionModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (newItem != null && newItem.getValue() != null) {
+                if (main.getChildren().size() > 1) {
+                    main.getChildren().removeLast();
+                }
+                main.getChildren().add(showResearchSubMenu(newItem.getValue()));
+            }
+        });
+
+        //Third run, add all root parents to the root
+        TreeItem<ResearchNode> root = new TreeItem<>();
+        for (ResearchNode n : list.keySet()) {
+            if (n.getPrerequisites().isEmpty()) {
+                root.getChildren().add(list.get(n));
+            }
+        }
+        tree.setRoot(root);
+        tree.setShowRoot(false);
+
+        //Final run, expand every root to show their children
+        for (ResearchNode n : list.keySet()) {
+            if (n.getPrerequisites().isEmpty()) {
+                list.get(n).setExpanded(true);
+            }
+        }
+        main.getChildren().add(tree);
+
+        return main;
+    }
+
+    private VBox showResearchSubMenu(ResearchNode value) {
+        VBox side = new VBox(10);
+        side.setPadding(new Insets(20));
+
+        Label name = new Label(value.getName());
+        TitledPane bonuses = new TitledPane();
+        bonuses.setText("Bonuses");
+        bonuses.setContent(new VBox(10, new Label(formatBonusTypeMap(value))));
+        bonuses.setExpanded(false);
+        Label researchTime = new Label("Research Time: " + value.getResearchTime());
+        Label startCost = new Label("Research Start Cost: " + value.getStartCost() + " GOLD");
+        Label maintCost = new Label("Research Maintenance Cost: " + value.getMaintenanceCost() + " gold/turn");
+        Button research = new Button("Research");
+        research.setOnAction(e -> {
+            if (engine.beginResearch(value)) {
+                research.setDisable(true);
+            };
+        });
+        if (engine.isResearched(value) || engine.getResearchTime() > 0) {
+            research.setDisable(true);
+        }
+
+        side.getChildren().addAll(name, bonuses, researchTime, startCost, maintCost, research);
+        return side;
+    }
+
+    private String formatBonusTypeMap(ResearchNode value) {
+        //Create new format for Map BonusType effects
+        String str = "";
+        for (BonusType b : value.getBonuses().keySet()) {
+            switch (b) {
+                case AGRICULTURE_OUTPUT -> {
+                    str += "Boost agricultural building output by " + String.format("%d%%", Math.round(value.getBonuses().get(b) * 100)) + "\n";
+                }
+                case BonusType.INDUSTRY_OUTPUT -> {
+                    str += "Boost industrial building output by " + String.format("%d%%", Math.round(value.getBonuses().get(b) * 100)) + "\n";
+                }
+                case BonusType.POPULATION_GROWTH -> {
+                    str += "Boost population growth by " +String.format("%d%%", Math.round(value.getBonuses().get(b) * 100)) + "\n";
+                }
+                case BonusType.POWER_OUTPUT -> {
+                    str += "Boost power supply by " +String.format("%d%%", Math.round(value.getBonuses().get(b) * 100)) + "\n";
+                }
+                case BonusType.TAX_INCOME -> {
+                    str += "Boost tax income by " +String.format("%d%%", Math.round(value.getBonuses().get(b) * 100)) + "\n";}
+            }
+        }
+        return str.trim();
     }
 
     private int parseInt(TextField field) {

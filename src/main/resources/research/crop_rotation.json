@@ -1,0 +1,11 @@
+{
+  "id": "crop_rotation",
+  "name": "Crop Rotation",
+  "bonuses": {
+      "AGRICULTURE_OUTPUT": 0.15
+    },
+  "researchTime": 30,
+  "startCost": 10000,
+  "maintenanceCost": 20,
+  "prerequisites": []
+}

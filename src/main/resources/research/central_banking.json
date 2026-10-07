@@ -1,0 +1,11 @@
+{
+  "id": "central_banking",
+  "name": "Central Banking",
+  "bonuses": {
+      "TAX_INCOME": 0.2
+    },
+  "researchTime": 50,
+  "startCost": 30000,
+  "maintenanceCost": 50,
+  "prerequisites": ["tax_reform"]
+}
