@@ -2,5 +2,7 @@
   "economic_boom.json",
   "food_shipment.json",
   "trade_offer.json",
-  "unrest.json"
+  "unrest.json",
+  "grain_rot.json",
+  "industrial_accident.json"
 ]

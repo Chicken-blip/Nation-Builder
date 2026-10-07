@@ -245,6 +245,9 @@ public class GameEngine {
     }
 
     private Nation findNation(GameEvent evt) {
+        if (!evt.isOtherNationNeeded()) {
+            if (evaluateAll(evt.getConditions(),null)) return playerNation;
+        };
         List<Nation> elligibleNations = new ArrayList<>();
         for (Nation candidate : otherNations) {
             if (evaluateAll(evt.getConditions(), candidate)) elligibleNations.add(candidate);
@@ -522,29 +525,65 @@ public class GameEngine {
 
     public void removePlaceholders(FiredEvent evt) {
         evt.getEvt().setText(evt.getEvt().getText().replace("{source}", evt.getNation().getName()));
-        if (evt.getEvt().getEventType() == EventType.TRADE_OFFER) {
-            //Pick random resource
-            Stat resource = Stat.GOLD;
-            Stat[] exclude = {Stat.GOLD, Stat.STABILITY, Stat.POPULATION, Stat.RELATIONS};
-            while (Arrays.asList(exclude).contains(resource)) {
-                resource = Stat.values()[(int) (Math.random() * Stat.values().length)];
+        switch (evt.getEvt().getEventType()) {
+            case EventType.TRADE_OFFER -> {
+                //Pick random resource
+                Stat resource = Stat.GOLD;
+                Stat[] exclude = {Stat.GOLD, Stat.STABILITY, Stat.POPULATION, Stat.RELATIONS};
+                while (Arrays.asList(exclude).contains(resource)) {
+                    resource = Stat.values()[(int) (Math.random() * Stat.values().length)];
+                }
+
+                //Get random resource amount and cost
+                int quantity = (int) ((Math.random() * 5) + 1) * 10;
+                double delta = evt.getNation().buyPrice(resource) * quantity;
+
+                //Replacing the effects for accepting
+                ArrayList<EventEffect> effects = new ArrayList<>();
+                effects.add(new EventEffect(Stat.GOLD, -delta));
+                effects.add(new EventEffect(resource, quantity));
+                evt.getEvt().getOptions().get(0).setResult(new EventResult(effects));
+
+                //Replacing placeholders
+                evt.getEvt().setText(evt.getEvt().getText().replace("{resource}", resource.toString()));
+                evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(quantity)));
+                evt.getEvt().setText(evt.getEvt().getText().replace("{cost}", String.format("%.2f", delta)));
+
             }
+            case EventType.FOOD_SHIPMENT -> {
+                //Get random Food amount
+                int quantity = (int) ((Math.random() * 5) + 1) * 100;
 
-            //Get random resource amount and cost
-            int quantity = (int) ((Math.random() * 5) + 1) * 10;
-            double delta = evt.getNation().buyPrice(resource) * quantity;
+                //Replacing the option effects
+                ArrayList<EventEffect> effects = new ArrayList<>();
+                effects.add(new EventEffect(Stat.FOOD, quantity));
+                evt.getEvt().getOptions().get(0).setResult(new EventResult(effects));
 
-            //Replacing the effects for accepting
-            ArrayList<EventEffect> effects = new ArrayList<>();
-            effects.add(new EventEffect(Stat.GOLD, -delta));
-            effects.add(new EventEffect(resource, quantity));
-            evt.getEvt().getOptions().get(0).setResult(new EventResult(effects));
+                //Replacing placeholders
+                evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(quantity)));
+            }
+            case GRAIN_ROT -> {
+                //Percent of food rotted - as an integer (X%, or 0.0X) - between 10 and 50%.
+                int percent = (int) (Math.random() * 40) + 10;
 
-            //Replacing placeholders
-            evt.getEvt().setText(evt.getEvt().getText().replace("{resource}", resource.toString()));
-            evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(quantity)));
-            evt.getEvt().setText(evt.getEvt().getText().replace("{cost}", String.format("%.2f", delta)));
+                //Replacing the option effects
+                ArrayList<EventEffect> effects = new ArrayList<>();
+                effects.add(new EventEffect(Stat.FOOD, (int) ((evt.getNation().getValue(Stat.FOOD) * percent) / 100.0)));
+                evt.getEvt().getOptions().get(0).setResult(new EventResult(effects));
 
+                //Replacing placeholders
+                evt.getEvt().setText(evt.getEvt().getText().replace("{percent}", String.valueOf(percent)));
+            }
+            case INDUSTRIAL_ACCIDENT -> {
+                //Population killed - between 10 and 30%.
+                int percent = (int) (Math.random() * 20) + 10;
+                int population = (evt.getNation().getValue(Stat.POPULATION) * percent) / 100;
+
+                adjustStat(Stat.POPULATION,-population);
+
+                //Replacing placeholders
+                evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(population)));
+            }
         }
     }
 }

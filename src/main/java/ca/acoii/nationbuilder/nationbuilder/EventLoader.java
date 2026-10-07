@@ -15,7 +15,7 @@ public class EventLoader {
             InputStream inStrm = getClass().getResourceAsStream("/events/" + filename);
             return mapper.readValue(inStrm, GameEvent.class);
         } catch (IOException e) {
-            throw new RuntimeException("Event file not found: " + filename);
+            throw new RuntimeException("Event file not found: " + filename + "\n" + e.getMessage());
         }
     }
     public List<GameEvent> loadAll() {

@@ -21,7 +21,7 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - Religion
 - Diplomacy Menu expansion
 - Politics and Factions
-- Political narrative
+- Political narrative (Quests/Tasks)
 - Post-narrative Leadership
 - Population Menu expansion
 - Trade Logistics

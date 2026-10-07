@@ -11,6 +11,7 @@ public class GameEvent {
     private double chance;
     private List<Condition> conditions;
     private List<EventOption> options;
+    private boolean otherNationNeeded;
 
     public GameEvent() {
         conditions = new ArrayList<>();
@@ -41,9 +42,15 @@ public class GameEvent {
     public void setOptions(List<EventOption> options) {
         this.options = options;
     }
+    public void setOtherNationNeeded(boolean otherNationNeeded) {
+        this.otherNationNeeded = otherNationNeeded;
+    }
+
 
     //Getters
-
+    public boolean isOtherNationNeeded() {
+        return otherNationNeeded;
+    }
     public int getId() {
         return id;
     }

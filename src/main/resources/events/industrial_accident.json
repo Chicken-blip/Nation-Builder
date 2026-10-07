@@ -1,0 +1,30 @@
+{
+  "text": "An accident occured, leading to the death of {quantity} of your population. Regulators are demanding for action.",
+  "eventType": "INDUSTRIAL_ACCIDENT",
+  "otherNationNeeded": false,
+  "priority": "HIGH",
+  "chance": 0.1,
+  "conditions": [
+    {"target": "PLAYER", "stat": "POPULATION", "op": "GREATER_OR_EQUAL", "value": 3000}
+  ],
+  "options": [
+    {
+      "option": "Offer financial compensation",
+      "result": {
+        "narrative": "You offer 500 gold to the families of the victims.",
+        "effects": [
+          {"stat": "GOLD", "delta": -500}
+        ]
+      }
+    },
+    {
+      "option": "Ignore the demands",
+      "result": {
+        "narrative": "You refuse to act upon the situation - to the spite of the affected families.",
+        "effects": [
+          {"stat": "STABILITY", "delta": -10}
+        ]
+      }
+    }
+  ]
+}

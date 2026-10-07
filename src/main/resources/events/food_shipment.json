@@ -1,5 +1,7 @@
 {
-  "text": "{source} is sending food to your nation. How considerate!",
+  "text": "{source} is sending food to your nation - {quantity} food, to be exact. How considerate!",
+  "eventType": "FOOD_SHIPMENT",
+  "otherNationNeeded": true,
   "priority": "LOW",
   "chance": 0.1,
   "conditions": [

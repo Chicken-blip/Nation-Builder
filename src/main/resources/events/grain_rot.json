@@ -1,0 +1,20 @@
+{
+  "text": "There's a major stockpile of Food - causing {percent}% to rot!",
+  "eventType": "GRAIN_ROT",
+  "priority": "LOW",
+  "otherNationNeeded": false,
+  "chance": 0.05,
+  "conditions": [
+    {"target": "PLAYER", "stat": "FOOD", "op": "GREATER_OR_EQUAL", "value": 1000}
+  ],
+  "options": [
+    {
+      "option": "What terrible luck!",
+      "result": {
+        "effects": [
+          {"stat": "FOOD", "delta": -50}
+        ]
+      }
+    }
+  ]
+}
