@@ -1,6 +1,8 @@
 # Nation Builder
 A turn-based game where you manage your country. Built with Java and JavaFX.
 
+[![wakatime](https://wakatime.com/badge/github/Chicken-blip/Nation-Builder.svg)](https://wakatime.com/badge/github/Chicken-blip/Nation-Builder)
+
 # Status
 - Simple UI of Main Scene
 - Rendering of changes in Nation stats
@@ -13,9 +15,16 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - Law Enactments to provide major bonuses
 
 # Roadmap
+- Adjustments to population growth and infrastructure scaling
 - Military management
 - Research
+- Religion
+- Diplomacy Menu expansion
+- Politics and Factions
 - Political narrative
+- Post-narrative Leadership
+- Population Menu expansion
+- Trade Logistics
 - Save/Load support
 - Expansion on events, nations, buildings, resources, infrastructure, appointees, and laws
 - Plenty of bugs and bug fixes

@@ -11,6 +11,10 @@ public class EventResult {
         narrative = "";
     }
 
+    public EventResult(ArrayList<EventEffect> effects) {
+        this.effects = effects;
+    }
+
     public void setNarrative(String narrative) {
         this.narrative = narrative;
     }

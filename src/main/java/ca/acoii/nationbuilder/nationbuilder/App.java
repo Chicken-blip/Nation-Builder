@@ -121,7 +121,10 @@ public class App extends Application implements NationListener, GameEngineListen
         turnBtn.setOnAction(e -> {
             engine.nextTurn();
             FiredEvent evt = engine.fireEvent();
-            if (evt != null) { showEventPopup(evt); }
+            if (evt != null) {
+                engine.removePlaceholders(evt);
+                showEventPopup(evt);
+            }
         });
 
         //Formatting Boxes

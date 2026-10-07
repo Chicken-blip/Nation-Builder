@@ -6,6 +6,7 @@ import java.util.List;
 public class GameEvent {
     private int id;
     private String text;
+    private EventType eventType;
     private Priority priority;
     private double chance;
     private List<Condition> conditions;
@@ -18,6 +19,7 @@ public class GameEvent {
         id = 0;
         text = "";
         priority = null;
+        eventType = EventType.GENERIC;
     }
 
     //Setters
@@ -59,5 +61,9 @@ public class GameEvent {
     }
     public List<EventOption> getOptions() {
         return options;
+    }
+
+    public EventType getEventType() {
+        return eventType;
     }
 }

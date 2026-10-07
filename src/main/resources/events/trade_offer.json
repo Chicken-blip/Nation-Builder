@@ -1,5 +1,6 @@
 {
-  "text": "{source} wants to trade with your nation",
+  "text": "{source} wants to trade with your nation: {quantity} {resource} for {cost} gold.",
+  "eventType": "TRADE_OFFER",
   "priority": "LOW",
   "chance": 0.05,
   "conditions": [

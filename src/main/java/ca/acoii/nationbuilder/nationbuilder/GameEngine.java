@@ -519,4 +519,32 @@ public class GameEngine {
     public int getLawCooldown() {
         return this.lawCooldown;
     }
+
+    public void removePlaceholders(FiredEvent evt) {
+        evt.getEvt().setText(evt.getEvt().getText().replace("{source}", evt.getNation().getName()));
+        if (evt.getEvt().getEventType() == EventType.TRADE_OFFER) {
+            //Pick random resource
+            Stat resource = Stat.GOLD;
+            Stat[] exclude = {Stat.GOLD, Stat.STABILITY, Stat.POPULATION, Stat.RELATIONS};
+            while (Arrays.asList(exclude).contains(resource)) {
+                resource = Stat.values()[(int) (Math.random() * Stat.values().length)];
+            }
+
+            //Get random resource amount and cost
+            int quantity = (int) ((Math.random() * 5) + 1) * 10;
+            double delta = evt.getNation().buyPrice(resource) * quantity;
+
+            //Replacing the effects for accepting
+            ArrayList<EventEffect> effects = new ArrayList<>();
+            effects.add(new EventEffect(Stat.GOLD, -delta));
+            effects.add(new EventEffect(resource, quantity));
+            evt.getEvt().getOptions().get(0).setResult(new EventResult(effects));
+
+            //Replacing placeholders
+            evt.getEvt().setText(evt.getEvt().getText().replace("{resource}", resource.toString()));
+            evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(quantity)));
+            evt.getEvt().setText(evt.getEvt().getText().replace("{cost}", String.format("%.2f", delta)));
+
+        }
+    }
 }
