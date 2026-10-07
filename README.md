@@ -13,22 +13,7 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - infrastructure to support population happiness
 - Appointees to boost output and production
 - Law Enactments to provide major bonuses
-
-# Roadmap
-- Adjustments to population growth and infrastructure scaling
-- Military management
-- Research
-- Religion
-- Diplomacy Menu expansion
-- Politics and Factions
-- Political narrative (Quests/Tasks)
-- Post-narrative Leadership
-- Population Menu expansion
-- Trade Logistics
-- Save/Load support
-- Expansion on events, nations, buildings, resources, infrastructure, appointees, and laws
-- Plenty of bugs and bug fixes
-- And more...
+- Research for long-term, larger benefits
 
 # How To Run
 - Requires Java JDK 17+ and Maven.
