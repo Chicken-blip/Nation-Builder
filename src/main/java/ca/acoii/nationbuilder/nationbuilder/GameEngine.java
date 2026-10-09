@@ -3,6 +3,9 @@ package ca.acoii.nationbuilder.nationbuilder;
 import java.util.*;
 
 public class GameEngine {
+    private final double TRADE_LOGISTIC_EXPENSE = 0.03;
+    private final int POPULATION_CAP = 50000;
+
     private final Nation playerNation;
     private int turn;
     private final List<GameEngineListener> listeners = new ArrayList<>();
@@ -280,7 +283,7 @@ public class GameEngine {
         for (GameEvent evt : events) {
             Nation nation = findNation(evt);
             if (nation == null) continue;
-            if (Math.random() < evt.getChance()) {
+            if (Math.random() < evt.getChance() && Math.random() < evt.getChance()) {
                 return new FiredEvent(evt, nation);
             }
         }
@@ -385,7 +388,7 @@ public class GameEngine {
 
     public boolean buyResource(Nation seller, Stat resource, int qty) {
         if (!seller.hasAgreement(AgreementType.TRADE)) return false;
-        double cost = seller.buyPrice(resource) * qty;
+        double cost = seller.buyPrice(resource) * qty * (1 + TRADE_LOGISTIC_EXPENSE);
         if (playerNation.getValue(Stat.GOLD, 1) < cost) return false;
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) - cost);
         adjustStat(resource, qty);
@@ -394,7 +397,7 @@ public class GameEngine {
 
     public boolean sellResource(Nation buyer, Stat resource, int qty) {
         if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
-        double revenue = buyer.sellPrice(resource) * qty;
+        double revenue = buyer.sellPrice(resource) * qty * (1 - TRADE_LOGISTIC_EXPENSE);
         if (playerNation.getValue(resource) < qty) return false;
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) + revenue);
         adjustStat(resource, -qty);
@@ -444,13 +447,27 @@ public class GameEngine {
 
     public void populationEffects() {
         int pop = playerNation.getValue(Stat.POPULATION);
+
+        //Apply the immigration
+        if (playerNation.isImmigrationOpen()) {
+            pop += projectedImmigration() + (int) ((Math.random() * projectedImmigration() * 0.1) - (projectedImmigration() * 0.05));
+        }
+
         int shortages = 0;
         // Consumable changes
         for (Stat s : consumables.keySet()) {
-            int actualComp = (int) (playerNation.getValue(s) - (consumables.get(s) * playerNation.getValue(Stat.POPULATION)));
+            int actualComp = (int) (consumables.get(s) * playerNation.getValue(Stat.POPULATION));
+
+            //Check if there's rationing going on
+            if (isRationing()) {
+                actualComp = (int) (actualComp * (1 - getRationReduction()));
+                adjustStat(Stat.STABILITY,getRationPenalty());
+            }
+
+            int compDiff = (int) (playerNation.getValue(s) - actualComp);
 
             //Check if there's a shortage
-            if (actualComp < 0) {
+            if (compDiff < 0) {
                 shortages++;
             }
 
@@ -460,8 +477,14 @@ public class GameEngine {
 
         //Population changes!
         if (shortages == 0) {
-            //No shortages - population grows
-            adjustStat(Stat.POPULATION, (pop / 50) * getBonusMultiplier(BonusType.POPULATION_GROWTH));
+            //No shortages - population grows - with a cap concerning the current population size
+            double growth = ((double) pop / 50) * getBonusMultiplier(BonusType.POPULATION_GROWTH) * (1 - (double) pop /POPULATION_CAP);
+
+            //Apply the growth multiplier through the birth rate policy
+            growth = growth * (getBirthRatePolicy());
+            adjustStat(Stat.GOLD, getBirthRatePolicyUpkeep());
+
+            adjustStat(Stat.POPULATION, growth);
         } else {
             //Shortages exist - population declines
             adjustStat(Stat.POPULATION, -(pop / 20));
@@ -482,14 +505,27 @@ public class GameEngine {
 
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD) + revenue);
 
-        double threshold = 0.4;
-        if (starving) threshold = 0.25;
+        adjustStat(Stat.STABILITY, getTaxPenalty());
 
-        if (taxRate > threshold) {
-            adjustStat(Stat.STABILITY, -1);
-        }
     }
 
+    public double getTaxThreshold() {
+        if (starving) return 0.25;
+        return 0.4;
+    }
+
+    public int getTaxPenalty() {
+        if (taxRate > getTaxThreshold()) {
+            int value = 0;
+            if (playerNation.getValue(Stat.GOLD) > 10000) {
+                value = -(int) (taxRate / (getTaxThreshold() * 0.1));
+            } else {
+                value = -(int) (taxRate / (getTaxThreshold() * 0.5));
+            }
+            return value;
+        }
+        return 0;
+    }
     public double getPowerSupply() {
         double sum = 0;
         if (builtBuildings.isEmpty()) return 0;
@@ -527,7 +563,10 @@ public class GameEngine {
     }
 
     public int getHappinessRequired(InfraCategory e) {
-        return (int) (playerNation.getValue(Stat.POPULATION) * 0.0015);
+        double base = 0.5;
+        double constant =  (int) (POPULATION_CAP);
+        int exponent = 3 ^ ((int) (playerNation.getValue(Stat.POPULATION) / constant));
+        return (int) (base * exponent);
     }
 
     public double getTaxRate() {
@@ -593,7 +632,68 @@ public class GameEngine {
         return nodeTime;
     }
 
-    public void removePlaceholders(FiredEvent evt) {
+    public double getTradeLogisticExpense() {return TRADE_LOGISTIC_EXPENSE;}
+    public int getPopulationCap() {return POPULATION_CAP;}
+    public double getRationReduction() {
+        return switch (playerNation.getRationSetting()) {
+            case NONE -> 0;
+            case LOW -> 0.1;
+            case MEDIUM -> 0.25;
+            case HIGH -> 0.4;
+        };
+    }
+
+    public int getRationPenalty() {
+        return switch (playerNation.getRationSetting()) {
+            case NONE -> 0;
+            case LOW -> -1;
+            case MEDIUM -> -3;
+            case HIGH -> -6;
+        };
+    }
+    
+    public double getBirthRatePolicy() {
+        return switch (playerNation.getBirthRateSetting()) {
+            case RESTRICTIVE -> 0.7;
+            case NEUTRAL -> 1.0;
+            case ENCOURAGING -> 1.3;
+        };
+    }
+
+    public int getBirthRatePolicyUpkeep() {
+        return switch (playerNation.getBirthRateSetting()) {
+            case RESTRICTIVE -> 0;
+            case NEUTRAL -> -30;
+            case ENCOURAGING -> -100;
+        };
+    }
+
+    public boolean isRationing() {
+        return playerNation.getRationSetting() != RationSetting.NONE;
+    }
+
+    public int projectedImmigration() {
+        //Immigration accounting for player nation's acceptance rate
+        return (int) (playerNation.getImmigrationRate() * prospectiveImmigration());
+    }
+
+    public int prospectiveImmigration() {
+        int base = (int) (playerNation.getValue(Stat.POPULATION) * 0.005);
+
+        //Factor for stability (0.0 at 40 - 1.0 at 100
+        double stabFactor = Math.max(0, (playerNation.getValue(Stat.STABILITY) - 40) / 60.0);
+        //Factor for happiness (cap at 3.0)
+        int happiness = 0;
+        for (InfraCategory c : InfraCategory.values()) {
+            happiness += getInfraHappiness(c) - getHappinessRequired(c);
+        }
+        double happFactor = Math.min(3.0, happiness / 30.0);
+
+        return (int) (base * stabFactor * happFactor);
+    }
+
+    public FiredEvent removePlaceholders(FiredEvent e) {
+        FiredEvent evt = new FiredEvent(new GameEvent(e.getEvt()), e.getNation());
         evt.getEvt().setText(evt.getEvt().getText().replace("{source}", evt.getNation().getName()));
         switch (evt.getEvt().getEventType()) {
             case EventType.TRADE_OFFER -> {
@@ -655,5 +755,8 @@ public class GameEngine {
                 evt.getEvt().setText(evt.getEvt().getText().replace("{quantity}", String.valueOf(population)));
             }
         }
+
+        return evt;
     }
+
 }

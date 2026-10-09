@@ -3,7 +3,7 @@
   "eventType": "GRAIN_ROT",
   "priority": "LOW",
   "otherNationNeeded": false,
-  "chance": 0.05,
+  "chance": 0.1,
   "conditions": [
     {"target": "PLAYER", "stat": "FOOD", "op": "GREATER_OR_EQUAL", "value": 1000}
   ],

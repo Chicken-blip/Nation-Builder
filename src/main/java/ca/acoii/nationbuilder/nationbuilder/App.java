@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.scene.control.*;
+import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +29,12 @@ public class App extends Application implements NationListener, GameEngineListen
     //Diplomacy Info
     private Label diplomacyHeader, diplomacyDetail, diplomacyAgreements;
     private List<Button> diplomacyBtns = new ArrayList<>();
-    private List<Label> popLabels = new ArrayList<>();
+    private List<Slider> popSliders = new ArrayList<>();
+    private List<Label> popTaxLabels = new ArrayList<>();
+    private List<Label> popRationLabels = new ArrayList<>();
+    private List<Label> popBirthRateLabels = new ArrayList<>();
+    private List<Label> popImmigrationLabels = new ArrayList<>();
+    private List<Node> popImmigrationNodes = new ArrayList<>();
     private List<Label> infraLabels = new ArrayList<>();
     private Map<Candidate, Button> appointBtns = new HashMap<>();
     private Map<Candidate, Button> dismissBtns = new HashMap<>();
@@ -48,6 +54,12 @@ public class App extends Application implements NationListener, GameEngineListen
         engine.loadAppointees();
         engine.loadLaws();
         engine.loadResearchNodes();
+
+        //Make sliders
+        taxSlider();
+        rationSlider();
+        birthRateSlider();
+        immigrationSlider();
 
         //Resource items
         goldLabel = new Label();
@@ -129,8 +141,8 @@ public class App extends Application implements NationListener, GameEngineListen
             engine.nextTurn();
             FiredEvent evt = engine.fireEvent();
             if (evt != null) {
-                engine.removePlaceholders(evt);
-                showEventPopup(evt);
+                FiredEvent updated = engine.removePlaceholders(evt);
+                showEventPopup(updated);
             }
         });
 
@@ -154,6 +166,95 @@ public class App extends Application implements NationListener, GameEngineListen
         //Testing Area
 
 
+    }
+
+    private void taxSlider() {
+        Slider taxSlider = new Slider(0, 0.80, engine.getTaxRate());
+        taxSlider.setShowTickMarks(true);
+        taxSlider.setShowTickLabels(true);
+        taxSlider.setMajorTickUnit(0.2);
+        taxSlider.setBlockIncrement(0.01);
+        taxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            engine.setTaxRate(newVal.doubleValue());
+            resetPopTaxLabels();
+        });
+        popSliders.add(taxSlider);
+    }
+    private void rationSlider() {
+        Slider rationSlider = new Slider(0, 3, 0);
+        rationSlider.setMinorTickCount(0);
+        rationSlider.setMajorTickUnit(1);
+        rationSlider.setSnapToTicks(true);
+        rationSlider.setShowTickMarks(true);
+        rationSlider.setShowTickLabels(true);
+
+        rationSlider.setLabelFormatter(new StringConverter<Double>() {
+            @Override
+            public String toString(Double n) {
+                if (n < 0.5) return RationSetting.NONE.toString();
+                if (n < 1.5) return RationSetting.LOW.toString();
+                if (n < 2.5) return RationSetting.MEDIUM.toString();
+                return RationSetting.HIGH.toString();
+            }
+
+            @Override
+            public Double fromString(String s) {
+                return switch (RationSetting.valueOf(s)) {
+                    case NONE -> 0d;
+                    case LOW -> 1d;
+                    case MEDIUM -> 2d;
+                    default -> 3d;
+                };
+            }
+        });
+        rationSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            yourNation.setRationSetting(RationSetting.valueOf(rationSlider.getLabelFormatter().toString(newVal.doubleValue())));
+            resetPopRationLabels();
+        });
+        popSliders.add(rationSlider);
+    }
+    private void birthRateSlider() {
+        Slider birthRateSlider = new Slider(0, 2, 0);
+        birthRateSlider.setMinorTickCount(0);
+        birthRateSlider.setMajorTickUnit(1);
+        birthRateSlider.setSnapToTicks(true);
+        birthRateSlider.setShowTickMarks(true);
+        birthRateSlider.setShowTickLabels(true);
+
+        birthRateSlider.setLabelFormatter(new StringConverter<Double>() {
+            @Override
+            public String toString(Double n) {
+                if (n < 0.5) return BirthRateSetting.RESTRICTIVE.toString();
+                if (n < 1.5) return BirthRateSetting.NEUTRAL.toString();
+                return BirthRateSetting.ENCOURAGING.toString();
+            }
+
+            @Override
+            public Double fromString(String s) {
+                return switch (BirthRateSetting.valueOf(s)) {
+                    case RESTRICTIVE -> 0d;
+                    case NEUTRAL -> 1d;
+                    default -> 2d;
+                };
+            }
+        });
+        birthRateSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            yourNation.setBirthRateSetting(BirthRateSetting.valueOf(birthRateSlider.getLabelFormatter().toString(newVal.doubleValue())));
+            resetPopBirthRateLabels();
+        });
+        popSliders.add(birthRateSlider);
+    }
+    private void immigrationSlider() {
+        Slider immigrationSlider = new Slider(0, 1, yourNation.getImmigrationRate());
+        immigrationSlider.setShowTickMarks(true);
+        immigrationSlider.setShowTickLabels(true);
+        immigrationSlider.setMajorTickUnit(0.2);
+        immigrationSlider.setBlockIncrement(0.01);
+        immigrationSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            yourNation.setImmigrationRate(newVal.doubleValue());
+            resetPopImmigrationLabels();
+        });
+        popSliders.add(immigrationSlider);
     }
 
     private void showEventPopup(FiredEvent evt) {
@@ -386,7 +487,10 @@ public class App extends Application implements NationListener, GameEngineListen
         HBox main = new HBox(20);
         main.setPadding(new Insets(20));
 
-        //Left Side - list of resources
+        //Left Side - list of resources + disclaimer label
+        VBox left = new VBox(30);
+        left.setPadding(new Insets(20));
+
         ListView<Stat> resources = new ListView<>();
         resources.setPrefHeight(150);
         List<Stat> excludes = List.of(new Stat[]{Stat.GOLD, Stat.RELATIONS, Stat.STABILITY, Stat.POPULATION});
@@ -407,8 +511,11 @@ public class App extends Application implements NationListener, GameEngineListen
                     }
                 });
 
-        main.getChildren().add(resources);
+        Label disclaimer = new Label("NOTE: All trades are subject to a " + (100 * engine.getTradeLogisticExpense()) + "% logistics expense");
 
+        left.getChildren().addAll(resources, disclaimer);
+
+        main.getChildren().add(left);
         return main;
     }
 
@@ -473,67 +580,174 @@ public class App extends Application implements NationListener, GameEngineListen
         return side;
     }
 
-    private VBox populationMenu() {
-        popLabels = new ArrayList<>();
-        VBox main = new VBox(10);
+    private HBox populationMenu() {
+        HBox main = new HBox(10);
         main.setPadding(new Insets(20));
 
-        //Tax Pane
-        Slider taxSlider = new Slider(0, 0.80, engine.getTaxRate());
-        taxSlider.setShowTickMarks(true);
-        taxSlider.setShowTickLabels(true);
-        taxSlider.setMajorTickUnit(0.2);
-        taxSlider.setBlockIncrement(0.01);
-        taxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            engine.setTaxRate(newVal.doubleValue());
-            resetPopLabels();
+        //Population Submenus
+        VBox btnContainer = new VBox(30);
+        btnContainer.setPadding(new Insets(20));
+        //Buttons
+        Button taxBtn = new Button("Taxes");
+        taxBtn.setOnAction(e -> {
+            if (main.getChildren().size() > 1) {
+                main.getChildren().removeLast();
+            }
+            main.getChildren().add(getPopTaxPane());
         });
+        Button rationBtn = new Button("Rationing");
+        rationBtn.setOnAction(e -> {
+            if (main.getChildren().size() > 1) {
+                main.getChildren().removeLast();
+            }
+            main.getChildren().add(getPopRationPane());
+        });
+        Button birthRateBtn = new Button("Birth Rate Policy");
+        birthRateBtn.setOnAction(e -> {
+            if (main.getChildren().size() > 1) {
+                main.getChildren().removeLast();
+            }
+            main.getChildren().add(getPopBirthRatePane());
+        });
+        Button immigrationBtn = new Button("Immigration Stance");
+        immigrationBtn.setOnAction(e -> {
+            if (main.getChildren().size() > 1) {
+                main.getChildren().removeLast();
+            }
+            main.getChildren().add(getPopImmigrationPane());
+        });
+
+        btnContainer.getChildren().addAll(taxBtn, rationBtn, birthRateBtn, immigrationBtn);
+
+        main.getChildren().add(btnContainer);
+
+        return main;
+    }
+
+    private VBox getPopTaxPane() {
+        popTaxLabels = new ArrayList<>();
+        //Tax Pane
+        VBox taxPane = new VBox(10);
+        taxPane.setPadding(new Insets(20));
+
+        Label title = new Label("Tax Management");
+        Label description = new Label("Set the percent of tax you get from your population.");
 
         //Labels below
         Label taxLabel1 = new Label("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
         Label taxLabel2 = new Label("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5 * engine.getBonusMultiplier(BonusType.TAX_INCOME))) + "/turn");
-        Label taxLabel3 = new Label("");
+        Label taxLabel3 = new Label("Unrest Threshold: " + (engine.getTaxThreshold() * 100));
         Label taxLabel4 = new Label("");
-        if (engine.isStarving()) {
-            taxLabel3 = new Label("Unrest Threshold: 25%");
-            if (engine.getTaxRate() > 0.25) {
-                taxLabel4 = new Label("Stability penalty: -1/turn");
-            } else {
-                taxLabel4 = new Label("No stability penalty");
-            }
+        if (engine.getTaxRate() > engine.getTaxThreshold()) {
+            taxLabel4 = new Label("Stability penalty: " + engine.getTaxPenalty() + "/turn");
         } else {
-            taxLabel3 = new Label("Unrest Threshold: 40%");
-            if (engine.getTaxRate() > 0.4) {
-                taxLabel4 = new Label("Stability penalty: -1/turn");
-            } else {
-                taxLabel4 = new Label("No stability penalty");
-            }
+            taxLabel4 = new Label("No stability penalty");
         }
-        popLabels.addAll(List.of(new Label[]{taxLabel1, taxLabel2, taxLabel3, taxLabel4}));
+        popTaxLabels.addAll(List.of(new Label[]{taxLabel1, taxLabel2, taxLabel3, taxLabel4}));
 
-        main.getChildren().add(taxSlider);
-        main.getChildren().addAll(taxLabel1, taxLabel2, taxLabel3, taxLabel4);
-        return main;
+        taxPane.getChildren().addAll(title, description, popSliders.get(0), taxLabel1, taxLabel2, taxLabel3, taxLabel4);
+        return taxPane;
+    }
+    private void resetPopTaxLabels() {
+        popTaxLabels.get(0).setText("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
+        popTaxLabels.get(1).setText("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5)) + "/turn");
+        popTaxLabels.get(2).setText("Unrest Threshold: " + (engine.getTaxThreshold() * 100));
+        if (engine.getTaxRate() > engine.getTaxThreshold()) {
+            popTaxLabels.get(3).setText("Stability penalty: " + engine.getTaxPenalty() + "/turn");
+        } else {
+            popTaxLabels.get(3).setText("No stability penalty");
+        }
     }
 
-    private void resetPopLabels() {
-        popLabels.get(0).setText("Tax Rate: " + String.format("%.2f", (engine.getTaxRate() * 100)) + "%");
-        popLabels.get(1).setText("Projected income: " + String.format("%.2f", (engine.getTaxRate() * yourNation.getValue(Stat.POPULATION) * 0.5)) + "/turn");
-        if (engine.isStarving()) {
-            popLabels.get(2).setText("Unrest Threshold: 25%");
-            if (engine.getTaxRate() > 0.25) {
-                popLabels.get(3).setText("Stability penalty: -1/turn");
-            } else {
-                popLabels.get(3).setText("No stability penalty");
+    private VBox getPopRationPane() {
+        popRationLabels = new ArrayList<>();
+        VBox rationPane = new VBox(10);
+        rationPane.setPadding(new Insets(20));
+
+        Label title = new Label("Rationing");
+        Label description = new Label("Reduce the food consumption per turn.");
+
+        Label name = new Label("Currently set to: " + yourNation.getRationSetting().toString());
+        Label reduction = new Label("Food Reduction: " + (engine.getRationReduction() * 100) + "%");
+        Label stab = new Label("Stability Penalty: " + engine.getRationPenalty() + "/turn");
+
+        popRationLabels.addAll(List.of(new Label[]{name, reduction, stab}));
+
+        rationPane.getChildren().addAll(title, description, popSliders.get(1), name, reduction, stab);
+
+        return rationPane;
+    }
+
+    private void resetPopRationLabels() {
+        popRationLabels.getFirst().setText("Currently set to: " + yourNation.getRationSetting().toString());
+        popRationLabels.get(1).setText("Food Reduction: " + (engine.getRationReduction() * 100) + "%");
+        popRationLabels.get(2).setText("Stability Penalty: " + engine.getRationPenalty() + "/turn");
+    }
+
+    private VBox getPopBirthRatePane() {
+        popBirthRateLabels = new ArrayList<>();
+        VBox birthRatePane = new VBox(10);
+        birthRatePane.setPadding(new Insets(20));
+
+        Label title = new Label("Birth Rate Policy");
+        Label description = new Label("Control the rate at which the population grows.");
+
+        Label name = new Label("Currently set to: " + yourNation.getBirthRateSetting().toString());
+        Label growth = new Label("Growth Multiplier: " + (engine.getBirthRatePolicy() * 100) + "%");
+        Label cost = new Label("Upkeep: " + engine.getBirthRatePolicyUpkeep() + " gold/turn");
+
+        popBirthRateLabels.addAll(List.of(new Label[]{name, growth, cost}));
+
+        birthRatePane.getChildren().addAll(title, description, popSliders.get(2), name, growth, cost);
+
+        return birthRatePane;
+    }
+
+    private void resetPopBirthRateLabels() {
+        popBirthRateLabels.getFirst().setText("Currently set to: " + yourNation.getBirthRateSetting().toString());
+        popBirthRateLabels.get(1).setText("Growth Multiplier: " + (engine.getBirthRatePolicy() * 100) + "%");
+        popBirthRateLabels.get(2).setText("Upkeep: " + engine.getBirthRatePolicyUpkeep() + "/turn");
+    }
+
+    private VBox getPopImmigrationPane() {
+        popImmigrationLabels = new ArrayList<>();
+        VBox immigrationPane = new VBox(10);
+        immigrationPane.setPadding(new Insets(20));
+
+        Label title = new Label("Immigration");
+        Label description = new Label("Control the intake of immigrants to your nation");
+        Label disclaimer = new Label("NOTE: Projected immigration is dependent on your current nation's prosperity as well as the set acceptance rate");
+        disclaimer.setWrapText(true);
+
+        Button toggle = new Button("");
+        toggle.setText(yourNation.isImmigrationOpen() ? "CLOSE BORDERS" : "OPEN BORDERS");
+        popSliders.get(3).setDisable(!yourNation.isImmigrationOpen());
+        toggle.setOnAction(e -> {
+            yourNation.toggleImmigration();
+            toggle.setText(yourNation.isImmigrationOpen() ? "CLOSE BORDERS" : "OPEN BORDERS");
+            popSliders.get(3).setDisable(!yourNation.isImmigrationOpen());
+            if (!yourNation.isImmigrationOpen()) {
+                yourNation.setImmigrationRate(0);
+                popSliders.get(3).setValue(0);
             }
-        } else {
-            popLabels.get(2).setText("Unrest Threshold: 40%");
-            if (engine.getTaxRate() > 0.4) {
-                popLabels.get(3).setText("Stability penalty: -1/turn");
-            } else {
-                popLabels.get(3).setText("No stability penalty");
-            }
-        }
+            resetPopImmigrationLabels();
+        });
+
+        Label name = new Label("Immigration status: " + (yourNation.isImmigrationOpen() ? "OPEN" : "CLOSED"));
+        Label acceptRate = new Label("Acceptance rate: " + String.format("%.2f", (yourNation.getImmigrationRate() * 100)) + "%");
+        Label prospect = new Label("Projected immigration: " + engine.projectedImmigration() + "/turn");
+
+        popImmigrationLabels.addAll(List.of(new Label[]{name, acceptRate, prospect}));
+
+        immigrationPane.getChildren().addAll(title, description, disclaimer, toggle, popSliders.get(3), name, acceptRate, prospect);
+
+        return immigrationPane;
+    }
+
+    public void resetPopImmigrationLabels() {
+        popImmigrationLabels.get(0).setText("Immigration status: " + (yourNation.isImmigrationOpen() ? "OPEN" : "CLOSED"));
+        popImmigrationLabels.get(1).setText("Acceptance rate: " + String.format("%.2f", (yourNation.getImmigrationRate() * 100)) + "%");
+        popImmigrationLabels.get(2).setText("Projected immigration: " + engine.projectedImmigration() + "/turn");
     }
 
     private HBox infrastructureMenu() {

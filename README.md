@@ -9,11 +9,12 @@ A turn-based game where you manage your country. Built with Java and JavaFX.
 - Functioning NEXT TURN button
 - JSON-Driven Event system
 - JSON-based schema for Buildings and Nations
-- Different menus for managing population, diplomacy, buildings, and other things
+- Different menus for managing diplomacy, buildings, and other things
 - infrastructure to support population happiness
 - Appointees to boost output and production
 - Law Enactments to provide major bonuses
 - Research for long-term, larger benefits
+- Population Management menu includes taxes, immigration, rationing, and birth rate policy
 
 # How To Run
 - Requires Java JDK 17+ and Maven.

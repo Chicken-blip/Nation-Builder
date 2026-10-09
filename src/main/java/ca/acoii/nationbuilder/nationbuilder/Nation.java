@@ -12,6 +12,10 @@ public class Nation {
     final private List<NationListener> listeners = new ArrayList<>();
     private Map<Stat, Double> sellPrices, buyPrices;
     private List<AgreementType> agreements = new ArrayList<>();
+    private RationSetting rationSetting = RationSetting.NONE;
+    private BirthRateSetting birthRateSetting = BirthRateSetting.NEUTRAL;
+    private boolean immigrationOpen;
+    private double immigrationRate = 0.0;
 
     //Constructors
     public Nation() {
@@ -81,6 +85,8 @@ public class Nation {
         if (stat == Stat.GOLD) {
             gold = newValue;
             notifyListeners();
+        } else {
+            setValue(stat, (int) newValue);
         }
     }
 
@@ -99,6 +105,35 @@ public class Nation {
 
     public Double buyPrice(Stat s) {return buyPrices.getOrDefault(s, 0.0);}
     public Double sellPrice(Stat s) {return sellPrices.getOrDefault(s, 0.0);}
+
+    public RationSetting getRationSetting() {
+        return rationSetting;
+    }
+
+    public void setRationSetting(RationSetting rationSetting) {
+        this.rationSetting = rationSetting;
+    }
+
+    public BirthRateSetting getBirthRateSetting() {
+        return birthRateSetting;
+    }
+    public void setBirthRateSetting(BirthRateSetting birthRateSetting) {
+        this.birthRateSetting = birthRateSetting;
+    }
+
+    public void toggleImmigration() {
+        immigrationOpen = !immigrationOpen;
+    }
+    public boolean isImmigrationOpen() {
+        return immigrationOpen;
+    }
+
+    public void setImmigrationRate(double immigrationRate) {
+        this.immigrationRate = immigrationRate;
+    }
+    public double getImmigrationRate() {
+        return immigrationRate;
+    }
 
     //Listener Methods
     public void addListener(NationListener listener) {

@@ -3,7 +3,7 @@
   "eventType": "INDUSTRIAL_ACCIDENT",
   "otherNationNeeded": false,
   "priority": "HIGH",
-  "chance": 0.1,
+  "chance": 0.2,
   "conditions": [
     {"target": "PLAYER", "stat": "POPULATION", "op": "GREATER_OR_EQUAL", "value": 3000}
   ],

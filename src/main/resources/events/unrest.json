@@ -2,7 +2,7 @@
   "text": "Your nation is growing unstable, and riots are growing in the region.",
   "priority": "LOW",
   "otherNationNeeded": false,
-  "chance": 0.05,
+  "chance": 0.15,
   "conditions": [
     {"target": "PLAYER","stat": "STABILITY","op": "LESS_OR_EQUAL","value" : 35}
   ],

@@ -11,6 +11,11 @@ public class FiredEvent {
         this.n = n;
     }
 
+    public FiredEvent(FiredEvent e) {
+        this.evt = new GameEvent(e.evt);
+        this.n = e.n;
+    }
+
     public GameEvent getEvt() {
         return evt;
     }

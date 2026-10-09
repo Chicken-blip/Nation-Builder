@@ -23,6 +23,16 @@ public class GameEvent {
         eventType = EventType.GENERIC;
     }
 
+    public GameEvent(GameEvent evt) {
+        conditions = evt.conditions;
+        options = evt.options;
+        chance = evt.chance;
+        id = evt.id;
+        text = evt.text;
+        priority = evt.priority;
+        eventType = evt.eventType;
+    }
+
     //Setters
     public void setId(int id) {
         this.id = id;

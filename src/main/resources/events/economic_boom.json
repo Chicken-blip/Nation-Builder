@@ -2,7 +2,7 @@
   "text": "Thanks to the stability of your nation, your economy is thriving!",
   "priority": "LOW",
   "otherNationNeeded": false,
-  "chance": 0.05,
+  "chance": 0.15,
   "conditions": [
     {"target": "PLAYER","stat": "STABILITY","op": "GREATER_OR_EQUAL","value" : 70}
   ],
