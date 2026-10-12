@@ -1,6 +1,14 @@
 [
   "tax_reform.json",
   "central_banking.json",
+  "central_mint.json",
+  "progressive_taxation.json",
   "crop_rotation.json",
-  "selective_breeding.json"
+  "selective_breeding.json",
+  "agricultural_engineering.json",
+  "integrated_farming.json",
+  "efficient_turbines.json",
+  "grid_modernization.json",
+  "mechanized_mining.json",
+  "assembly_lines.json"
 ]

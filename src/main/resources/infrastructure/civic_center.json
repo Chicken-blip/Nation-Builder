@@ -1,0 +1,13 @@
+{
+  "name": "Civic Center",
+  "category": "CIVIC",
+  "cost": [
+    {"stat": "WOOD", "delta": -100},
+    {"stat": "STONE", "delta": -70},
+    {"stat": "IRON", "delta": -30},
+    {"stat": "GOLD", "delta": -50}
+  ],
+  "happiness": 3,
+  "powerRequired": 10,
+  "upkeep": 40
+}

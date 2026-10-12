@@ -1,0 +1,12 @@
+{
+  "name": "Research Lab",
+  "category": "SCIENCE",
+  "cost": [
+    {"stat": "WOOD", "delta": -80},
+    {"stat": "STONE", "delta": -60},
+    {"stat": "IRON", "delta": -40}
+  ],
+  "happiness": 2,
+  "powerRequired": 10,
+  "upkeep": 40
+}

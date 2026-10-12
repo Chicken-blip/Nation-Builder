@@ -1,0 +1,12 @@
+{
+  "name": "Institute",
+  "category": "SCIENCE",
+  "cost": [
+    {"stat": "WOOD", "delta": -100},
+    {"stat": "STONE", "delta": -80},
+    {"stat": "IRON", "delta": -60}
+  ],
+  "happiness": 5,
+  "powerRequired": 15,
+  "upkeep": 300
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Roads",
+  "category": "CIVIC",
+  "cost": [
+    {"stat": "WOOD", "delta": -30},
+    {"stat": "STONE", "delta": -20}
+  ],
+  "happiness": 1,
+  "powerRequired": 0,
+  "upkeep": 15
+}

@@ -1,0 +1,11 @@
+{
+  "id": "assembly_lines",
+  "name": "Assembly Lines",
+  "bonuses": {
+    "INDUSTRY_OUTPUT": 0.2
+  },
+  "researchTime": 50,
+  "startCost": 25000,
+  "maintenanceCost": 50,
+  "prerequisites": ["mechanized_mining"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Theater",
+  "category": "CULTURE",
+  "cost": [
+    {"stat": "WOOD", "delta": -60},
+    {"stat": "STONE", "delta": -50},
+    {"stat": "GOLD", "delta": -50}
+  ],
+  "happiness": 2,
+  "powerRequired": 10,
+  "upkeep": 30
+}

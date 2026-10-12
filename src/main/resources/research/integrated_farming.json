@@ -1,0 +1,12 @@
+{
+  "id": "integrated_farming",
+  "name": "Integrated Farming",
+  "bonuses": {
+    "AGRICULTURE_OUTPUT": 0.15,
+    "POPULATION_GROWTH": 0.05
+  },
+  "researchTime": 85,
+  "startCost": 75000,
+  "maintenanceCost": 50,
+  "prerequisites": ["selective_breeding"]
+}

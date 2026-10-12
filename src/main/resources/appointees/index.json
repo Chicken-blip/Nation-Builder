@@ -2,5 +2,7 @@
   "treasurer.json",
   "power_minister.json",
   "industry_minister.json",
-  "agriculture_minister.json"
+  "agriculture_minister.json",
+  "trade_minister.json",
+  "logistics_overseer.json"
 ]

@@ -8,5 +8,21 @@
   "stadium.json",
 
   "clinic.json",
-  "hospital.json"
+  "hospital.json",
+
+  "police_station.json",
+  "fire_station.json",
+  "courthouse.json",
+
+  "roads.json",
+  "public_transit.json",
+  "civic_center.json",
+
+  "theater.json",
+  "museum.json",
+  "concert_hall.json",
+
+  "research_lab.json",
+  "observatory.json",
+  "institute.json"
 ]

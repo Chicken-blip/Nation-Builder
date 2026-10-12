@@ -1,0 +1,15 @@
+{
+  "role": "TRADE_MINISTER",
+  "candidates": [
+    {
+      "name": "Morgan Bonner",
+      "bonusPercent": 0.05,
+      "upkeep": 100
+    },
+    {
+      "name": "Erin Walker",
+      "bonusPercent": 0.10,
+      "upkeep": 170
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Fire Station",
+  "category": "SAFETY",
+  "cost": [
+    {"stat": "WOOD", "delta": -35},
+    {"stat": "STONE", "delta": -25},
+    {"stat": "IRON", "delta": -10}
+  ],
+  "happiness": 1,
+  "powerRequired": 2,
+  "upkeep": 12
+}

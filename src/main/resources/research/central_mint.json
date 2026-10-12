@@ -1,0 +1,11 @@
+{
+  "id": "central_mint",
+  "name": "Central Mint",
+  "bonuses": {
+    "TAX_INCOME": 0.15
+  },
+  "researchTime": 90,
+  "startCost": 40000,
+  "maintenanceCost": 80,
+  "prerequisites": ["central_banking"]
+}

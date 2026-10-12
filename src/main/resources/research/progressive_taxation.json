@@ -1,0 +1,12 @@
+{
+  "id": "progressive_taxation",
+  "name": "Progressive Taxation",
+  "bonuses": {
+    "TAX_INCOME": 0.1,
+    "POPULATION_GROWTH": 0.05
+  },
+  "researchTime": 75,
+  "startCost": 50000,
+  "maintenanceCost": 75,
+  "prerequisites": ["central_banking"]
+}

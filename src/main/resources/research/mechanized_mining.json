@@ -1,0 +1,11 @@
+{
+  "id": "mechanized_mining",
+  "name": "Mechanized Mining",
+  "bonuses": {
+    "INDUSTRY_OUTPUT": 0.1
+  },
+  "researchTime": 30,
+  "startCost": 15000,
+  "maintenanceCost": 30,
+  "prerequisites": []
+}

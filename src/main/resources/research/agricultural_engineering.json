@@ -1,0 +1,11 @@
+{
+  "id": "agricultural_engineering",
+  "name": "Agricultural Engineering",
+  "bonuses": {
+    "AGRICULTURE_OUTPUT": 0.2
+  },
+  "researchTime": 100,
+  "startCost": 60000,
+  "maintenanceCost": 75,
+  "prerequisites": ["selective_breeding"]
+}

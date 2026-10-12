@@ -1,0 +1,11 @@
+{
+  "name": "Police Station",
+  "category": "SAFETY",
+  "cost": [
+    {"stat": "WOOD", "delta": -40},
+    {"stat": "STONE", "delta": -30}
+  ],
+  "happiness": 1,
+  "powerRequired": 1,
+  "upkeep": 15
+}

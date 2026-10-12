@@ -1,0 +1,11 @@
+{
+  "id": "efficient_turbines",
+  "name": "Efficient Turbines",
+  "bonuses": {
+    "POWER_OUTPUT": 0.15
+  },
+  "researchTime": 30,
+  "startCost": 15000,
+  "maintenanceCost": 30,
+  "prerequisites": []
+}

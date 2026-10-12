@@ -389,7 +389,11 @@ public class GameEngine {
 
     public boolean buyResource(Nation seller, Stat resource, int qty) {
         if (!seller.hasAgreement(AgreementType.TRADE)) return false;
-        double cost = seller.buyPrice(resource) * qty * (1 + TRADE_LOGISTIC_EXPENSE);
+        double logistics = (1 + TRADE_LOGISTIC_EXPENSE);
+        if (getBonusMultiplier(BonusType.LOGISTICS_COST) != 1.0) {
+            logistics = logistics * (1 - getBonusMultiplier(BonusType.LOGISTICS_COST));
+        }
+        double cost = seller.buyPrice(resource) * qty * logistics;
         if (playerNation.getValue(Stat.GOLD, 1) < cost) return false;
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) - cost);
         adjustStat(resource, qty);
@@ -398,7 +402,12 @@ public class GameEngine {
 
     public boolean sellResource(Nation buyer, Stat resource, int qty) {
         if (!buyer.hasAgreement(AgreementType.TRADE)) return false;
-        double revenue = buyer.sellPrice(resource) * qty * (1 - TRADE_LOGISTIC_EXPENSE);
+        double logistics = (1 - TRADE_LOGISTIC_EXPENSE);
+        if (getBonusMultiplier(BonusType.LOGISTICS_COST) != 1.0) {
+            logistics = logistics * (1 - getBonusMultiplier(BonusType.LOGISTICS_COST));
+        }
+        double revenue = buyer.sellPrice(resource) * qty * logistics;
+        revenue = revenue * getBonusMultiplier(BonusType.TRADE_INCOME);
         if (playerNation.getValue(resource) < qty) return false;
         playerNation.setValue(Stat.GOLD, playerNation.getValue(Stat.GOLD, 1) + revenue);
         adjustStat(resource, -qty);

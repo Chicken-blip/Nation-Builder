@@ -1,0 +1,11 @@
+{
+  "name": "Observatory",
+  "category": "SCIENCE",
+  "cost": [
+    {"stat": "WOOD", "delta": -60},
+    {"stat": "STONE", "delta": -50}
+  ],
+  "happiness": 2,
+  "powerRequired": 5,
+  "upkeep": 100
+}

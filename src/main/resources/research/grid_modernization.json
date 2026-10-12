@@ -1,0 +1,12 @@
+{
+  "id": "grid_modernization",
+  "name": "Grid Modernization",
+  "bonuses": {
+    "POWER_OUTPUT": 0.1,
+    "INDUSTRY_OUTPUT": 0.05
+  },
+  "researchTime": 50,
+  "startCost": 25000,
+  "maintenanceCost": 50,
+  "prerequisites": ["efficient_turbines"]
+}

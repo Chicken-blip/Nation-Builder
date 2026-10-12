@@ -1,0 +1,13 @@
+{
+  "name": "Concert Hall",
+  "category": "CULTURE",
+  "cost": [
+    {"stat": "WOOD", "delta": -70},
+    {"stat": "STONE", "delta": -60},
+    {"stat": "IRON", "delta": -20},
+    {"stat": "GOLD", "delta": -30}
+  ],
+  "happiness": 3,
+  "powerRequired": 15,
+  "upkeep": 50
+}

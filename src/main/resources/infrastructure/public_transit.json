@@ -1,0 +1,12 @@
+{
+  "name": "Public Transit",
+  "category": "CIVIC",
+  "cost": [
+    {"stat": "WOOD", "delta": -60},
+    {"stat": "STONE", "delta": -40},
+    {"stat": "IRON", "delta": -20}
+  ],
+  "happiness": 2,
+  "powerRequired": 5,
+  "upkeep": 30
+}

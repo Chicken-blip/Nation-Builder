@@ -1,0 +1,12 @@
+{
+  "name": "Courthouse",
+  "category": "SAFETY",
+  "cost": [
+    {"stat": "WOOD", "delta": -50},
+    {"stat": "STONE", "delta": -50},
+    {"stat": "IRON", "delta": -20}
+  ],
+  "happiness": 3,
+  "powerRequired": 3,
+  "upkeep": 25
+}
