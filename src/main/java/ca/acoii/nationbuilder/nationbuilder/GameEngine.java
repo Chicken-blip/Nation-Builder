@@ -48,6 +48,7 @@ public class GameEngine {
         applyTaxes();
         applyInfraEffects();
         applyAppointeeUpkeep();
+        autoMilitaryGrowth();
         for (Nation n : otherNations) {
             if (n.getValue(Stat.RELATIONS) < 0) {
                 n.removeAgreement(AgreementType.TRADE);
@@ -690,6 +691,19 @@ public class GameEngine {
         double happFactor = Math.min(3.0, happiness / 30.0);
 
         return (int) (base * stabFactor * happFactor);
+    }
+
+    //Method for automatic growth of other nation military
+    private void autoMilitaryGrowth() {
+        double growth;
+        for (Nation n : otherNations) {
+            growth = n.getValue(Stat.GOLD) / 500.0;
+            for (UnitType a : n.getMilitary().keySet()) {
+                if (Objects.requireNonNull(a) == UnitType.INFANTRY) {
+                    n.getMilitary().replace(a, (int) (n.getMilitary().get(a) + 10 + growth));
+                }
+            }
+        }
     }
 
     public FiredEvent removePlaceholders(FiredEvent e) {

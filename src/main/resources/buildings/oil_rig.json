@@ -1,0 +1,15 @@
+{
+  "name": "Oil Rig",
+  "buildingSector": "INDUSTRY",
+  "cost": [
+    {"stat": "WOOD", "delta": -50},
+    {"stat": "STONE", "delta": -40},
+    {"stat": "IRON", "delta": -30}
+  ],
+  "output": [
+    {"stat": "OIL", "delta": 5}
+  ],
+  "powerRequired": 7,
+  "powerOutput": 0,
+  "upkeep": 0
+}

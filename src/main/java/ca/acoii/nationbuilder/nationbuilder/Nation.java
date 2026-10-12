@@ -12,6 +12,7 @@ public class Nation {
     final private List<NationListener> listeners = new ArrayList<>();
     private Map<Stat, Double> sellPrices, buyPrices;
     private List<AgreementType> agreements = new ArrayList<>();
+    private Map<UnitType, Integer> military = new HashMap<>();
     private RationSetting rationSetting = RationSetting.NONE;
     private BirthRateSetting birthRateSetting = BirthRateSetting.NEUTRAL;
     private boolean immigrationOpen;
@@ -39,10 +40,11 @@ public class Nation {
     }
     //Jackson Constructor
     @JsonCreator
-    public Nation(@JsonProperty("name") String name, @JsonProperty("gold") double gold, @JsonProperty("stability") int stability, @JsonProperty("relations") int relations, @JsonProperty("buyPrices") Map<Stat, Double> buyPrices, @JsonProperty("sellPrices") Map<Stat, Double> sellPrices) {
+    public Nation(@JsonProperty("name") String name, @JsonProperty("gold") double gold, @JsonProperty("stability") int stability, @JsonProperty("relations") int relations, @JsonProperty("buyPrices") Map<Stat, Double> buyPrices, @JsonProperty("sellPrices") Map<Stat, Double> sellPrices, @JsonProperty("military") Map<UnitType, Integer> military) {
         this.name = name;
         this.buyPrices = buyPrices;
         this.sellPrices = sellPrices;
+        this.military = military;
         setValue(Stat.GOLD, gold);
         setValue(Stat.STABILITY, stability);
         setValue(Stat.RELATIONS, relations);
@@ -133,6 +135,9 @@ public class Nation {
     }
     public double getImmigrationRate() {
         return immigrationRate;
+    }
+    public Map<UnitType, Integer> getMilitary() {
+        return military;
     }
 
     //Listener Methods

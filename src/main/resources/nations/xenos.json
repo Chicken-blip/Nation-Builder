@@ -1,6 +1,6 @@
 {
   "name": "Xenos",
-  "gold": 300,
+  "gold": 5000,
   "stability": 50,
   "relations": 0,
   "buyPrices": {
@@ -9,7 +9,8 @@
     "IRON": 30,
     "COAL": 22,
     "FOOD": 36,
-    "CLOTH": 42
+    "CLOTH": 42,
+    "OIL": 50
   },
   "sellPrices": {
     "WOOD": 0.15,
@@ -17,6 +18,10 @@
     "IRON": 0.3,
     "COAL": 0.22,
     "FOOD": 0.35,
-    "CLOTH": 0.4
+    "CLOTH": 0.4,
+    "OIL": 0.5
+  },
+  "military": {
+    "INFANTRY": 3000
   }
 }

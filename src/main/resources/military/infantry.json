@@ -1,0 +1,10 @@
+{
+  "name": "Infantry",
+  "attack": 10,
+  "defence": 8,
+  "goldCost": 50,
+  "goldUpkeep": 2,
+  "oilCost": 1,
+  "travelTime": 3,
+  "lossResistance": 0.1
+}

@@ -37,3 +37,4 @@ Laws, Research
 - UI polish
 - Tests
 - Balance tuning
+- Update Setup instructions

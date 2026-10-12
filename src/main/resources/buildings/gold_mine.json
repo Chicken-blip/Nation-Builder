@@ -2,11 +2,11 @@
   "name": "Gold Mine",
   "buildingSector": "INDUSTRY",
   "cost": [
-    {"stat": "WOOD", "delta": -50},
-    {"stat": "STONE", "delta": -25}
+    {"stat": "WOOD", "delta": -60},
+    {"stat": "STONE", "delta": -35}
   ],
   "output": [
-    {"stat": "GOLD", "delta": 3}
+    {"stat": "GOLD", "delta": 2}
   ],
   "powerRequired": 5,
   "powerOutput": 0,

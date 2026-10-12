@@ -9,7 +9,8 @@
     "IRON": 27,
     "COAL": 24,
     "FOOD": 28,
-    "CLOTH": 18
+    "CLOTH": 18,
+    "OIL": 47
   },
   "sellPrices": {
     "WOOD": 0.3,
@@ -17,6 +18,10 @@
     "IRON": 0.6,
     "COAL": 0.5,
     "FOOD": 0.6,
-    "CLOTH": 0.4
+    "CLOTH": 0.4,
+    "OIL": 0.8
+  },
+  "military": {
+    "INFANTRY": 1500
   }
 }
